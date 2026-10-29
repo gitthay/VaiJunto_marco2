@@ -43,5 +43,20 @@
     "email": "a",
     "senha": "123",
     "tipo": "MOTORISTA"
+  },
+  {
+    "email": "123",
+    "senha": "123",
+    "tipo": "MOTORISTA"
+  },
+  {
+    "email": "aaa",
+    "senha": "123",
+    "tipo": "MOTORISTA"
+  },
+  {
+    "email": "bbb",
+    "senha": "123",
+    "tipo": "PASSAGEIRO"
   }
 ]

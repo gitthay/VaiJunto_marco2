@@ -499,12 +499,7 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 
 	caronas[caronaIndex].Ativa = false
 
-	dadosCaronas, _ := json.MarshalIndent(caronas, "", "  ")
-	if err := os.WriteFile(ArquivoCaronas, dadosCaronas, 0644); err != nil {
-		return false, "", err
-	}
-
-	// Remove as reservas ativas dessa carona cancelada do reservas.json
+	// Remove as reservas ativas dessa carona cancelada do reservas.json e devolve os assentos
 	if qtdPassageiros > 0 {
 		novasReservas := make([]Reserva, 0)
 		for _, r := range reservas {
@@ -515,12 +510,28 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 					break
 				}
 			}
-			if !temCaronaCancelada {
+			if temCaronaCancelada {
+				for _, trechoReservado := range r.Itinerario {
+					for idxC, c := range caronas {
+						if strings.TrimSpace(c.ID) == strings.TrimSpace(trechoReservado.CaronaID) {
+							indices := localizarIndicesTrecho(c, trechoReservado.Origem, trechoReservado.Destino)
+							for _, idx := range indices {
+								caronas[idxC].Trechos[idx].AssentosLivre++
+							}
+						}
+					}
+				}
+			} else {
 				novasReservas = append(novasReservas, r)
 			}
 		}
 		dadosReservas, _ := json.MarshalIndent(novasReservas, "", "  ")
 		_ = os.WriteFile(ArquivoReservas, dadosReservas, 0644)
+	}
+
+	dadosCaronas, _ := json.MarshalIndent(caronas, "", "  ")
+	if err := os.WriteFile(ArquivoCaronas, dadosCaronas, 0644); err != nil {
+		return false, "", err
 	}
 
 	return false, "Carona cancelada com sucesso!", nil

@@ -2152,3 +2152,40 @@
 [2026-09-17 16:41:42] [DESCONEXAO] Sessão ativa do usuário pedro liberada.
 [2026-09-17 16:41:45] [DESCONEXAO] Cliente 172.18.0.1:56764 desconectou normalmente.
 [2026-09-17 16:41:45] [DESCONEXAO] Sessão ativa do usuário maria liberada.
+[2026-10-20 15:07:56] [CONEXAO] Novo cliente conectado de: [::1]:62780
+[2026-10-20 15:08:02] [REQUISICAO] De: [::1]:62780 | Usuario: a | Acao: AUTENTICAR | Payload: {"email":"a","senha":"124","tipo":"MOTORISTA"}
+[2026-10-20 15:08:02] [RESPOSTA] Para: [::1]:62780 (Usuario: a) | Acao: AUTENTICAR | Sucesso: false | Msg: Senha incorreta. | Payload: 
+[2026-10-20 15:08:07] [REQUISICAO] De: [::1]:62780 | Usuario: 123 | Acao: AUTENTICAR | Payload: {"email":"123","senha":"123","tipo":"MOTORISTA"}
+[2026-10-20 15:08:07] [RESPOSTA] Para: [::1]:62780 (Usuario: 123) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-20 15:08:37] [REQUISICAO] De: [::1]:62780 | Usuario: 123 | Acao: PUBLICAR_CARONA | Payload: {"id":"CAR-1792519717734185000","motorista_id":"123","assentos_tot":1,"trechos":[{"origem":"a","destino":"b","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T12:00:00-03:00","horario_chegada":"2025-12-12T12:03:00-03:00","preco":15,"assentos_livres":1}],"ativa":true}
+[2026-10-20 15:08:43] [DESCONEXAO] Cliente [::1]:62780 desconectou normalmente.
+[2026-10-20 15:08:43] [DESCONEXAO] Sessão ativa do usuário 123 liberada.
+[2026-10-20 15:08:48] [CONEXAO] Novo cliente conectado de: [::1]:62952
+[2026-10-20 15:08:52] [REQUISICAO] De: [::1]:62952 | Usuario: aaa | Acao: AUTENTICAR | Payload: {"email":"aaa","senha":"123","tipo":"MOTORISTA"}
+[2026-10-20 15:08:52] [RESPOSTA] Para: [::1]:62952 (Usuario: aaa) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-20 15:09:22] [REQUISICAO] De: [::1]:62952 | Usuario: aaa | Acao: PUBLICAR_CARONA | Payload: {"id":"CAR-1792519762759355900","motorista_id":"aaa","assentos_tot":2,"trechos":[{"origem":"b","destino":"c","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T12:30:00-03:00","horario_chegada":"2025-12-12T13:00:00-03:00","preco":15,"assentos_livres":2}],"ativa":true}
+[2026-10-20 15:09:43] [CONEXAO] Novo cliente conectado de: [::1]:63119
+[2026-10-20 15:10:02] [REQUISICAO] De: [::1]:63119 | Usuario: bbb | Acao: AUTENTICAR | Payload: {"email":"bbb","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-20 15:10:02] [RESPOSTA] Para: [::1]:63119 (Usuario: bbb) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-20 15:10:10] [REQUISICAO] De: [::1]:63119 | Usuario: bbb | Acao: BUSCAR_ITINERARIO | Payload: {"origem":"a","destino":"b","data":{"dia":12,"mes":12,"ano":2025}}
+[2026-10-20 15:10:27] [REQUISICAO] De: [::1]:63119 | Usuario: bbb | Acao: BUSCAR_ITINERARIO | Payload: {"origem":"a","destino":"c","data":{"dia":12,"mes":12,"ano":2025}}
+[2026-10-20 15:10:44] [REQUISICAO] De: [::1]:63119 | Usuario: bbb | Acao: RESERVAR_TRECHO | Payload: {"trechos":[{"carona_id":"CAR-1792519717734185000","motorista_id":"123","origem":"a","destino":"b","horario_partida":"2025-12-12T12:00:00-03:00","horario_chegada":"2025-12-12T12:03:00-03:00","preco":15,"assentos_livres":1},{"carona_id":"CAR-1792519762759355900","motorista_id":"aaa","origem":"b","destino":"c","horario_partida":"2025-12-12T12:30:00-03:00","horario_chegada":"2025-12-12T13:00:00-03:00","preco":15,"assentos_livres":2}],"preco_total":30}
+[2026-10-20 15:10:46] [REQUISICAO] De: [::1]:63119 | Usuario: bbb | Acao: LISTAR_RESERVAS | Payload: null
+[2026-10-20 15:10:59] [REQUISICAO] De: [::1]:62952 | Usuario: aaa | Acao: CONSULTAR_CARONAS | Payload: null
+[2026-10-20 15:11:15] [REQUISICAO] De: [::1]:62952 | Usuario: aaa | Acao: CONSULTAR_CARONAS | Payload: null
+[2026-10-20 15:11:15] [REQUISICAO] De: [::1]:62952 | Usuario: aaa | Acao: CONSULTAR_PASSAGEIROS_CARONA | Payload: {"carona_id":"CAR-1792519762759355900"}
+[2026-10-20 15:11:22] [REQUISICAO] De: [::1]:62952 | Usuario: aaa | Acao: CANCELAR_CARONA | Payload: {"carona_id":"CAR-1792519762759355900","confirmar":false}
+[2026-10-20 15:11:24] [REQUISICAO] De: [::1]:62952 | Usuario: aaa | Acao: CANCELAR_CARONA | Payload: {"carona_id":"CAR-1792519762759355900","confirmar":true}
+[2026-10-20 15:11:36] [REQUISICAO] De: [::1]:63119 | Usuario: bbb | Acao: LISTAR_RESERVAS | Payload: null
+[2026-10-20 15:11:42] [DESCONEXAO] Cliente [::1]:62952 desconectou normalmente.
+[2026-10-20 15:11:42] [DESCONEXAO] Sessão ativa do usuário aaa liberada.
+[2026-10-20 15:11:45] [CONEXAO] Novo cliente conectado de: [::1]:59719
+[2026-10-20 15:11:48] [REQUISICAO] De: [::1]:59719 | Usuario: 123 | Acao: AUTENTICAR | Payload: {"email":"123","senha":"123","tipo":"MOTORISTA"}
+[2026-10-20 15:11:48] [RESPOSTA] Para: [::1]:59719 (Usuario: 123) | Acao: AUTENTICAR | Sucesso: true | Msg: Autenticação realizada com sucesso! | Payload: 
+[2026-10-20 15:11:51] [REQUISICAO] De: [::1]:59719 | Usuario: 123 | Acao: CONSULTAR_CARONAS | Payload: null
+[2026-10-20 15:12:03] [REQUISICAO] De: [::1]:59719 | Usuario: 123 | Acao: CONSULTAR_CARONAS | Payload: null
+[2026-10-20 15:12:05] [REQUISICAO] De: [::1]:59719 | Usuario: 123 | Acao: CONSULTAR_PASSAGEIROS_CARONA | Payload: {"carona_id":"CAR-1792519717734185000"}
+[2026-10-20 15:12:15] [ERRO CONEXAO] Erro na leitura do cliente [::1]:59719: read tcp [::1]:8080->[::1]:59719: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
+[2026-10-20 15:12:15] [DESCONEXAO] Sessão ativa do usuário 123 liberada.
+[2026-10-20 15:12:18] [ERRO CONEXAO] Erro na leitura do cliente [::1]:63119: read tcp [::1]:8080->[::1]:63119: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
+[2026-10-20 15:12:18] [DESCONEXAO] Sessão ativa do usuário bbb liberada.

@@ -189,5 +189,47 @@
       }
     ],
     "ativa": true
+  },
+  {
+    "id": "CAR-1792519717734185000",
+    "motorista_id": "123",
+    "assentos_tot": 1,
+    "trechos": [
+      {
+        "origem": "a",
+        "destino": "b",
+        "data_partida": {
+          "dia": 12,
+          "mes": 12,
+          "ano": 2025
+        },
+        "horario_partida": "2025-12-12T12:00:00-03:00",
+        "horario_chegada": "2025-12-12T12:03:00-03:00",
+        "preco": 15,
+        "assentos_livres": 1
+      }
+    ],
+    "ativa": true
+  },
+  {
+    "id": "CAR-1792519762759355900",
+    "motorista_id": "aaa",
+    "assentos_tot": 2,
+    "trechos": [
+      {
+        "origem": "b",
+        "destino": "c",
+        "data_partida": {
+          "dia": 12,
+          "mes": 12,
+          "ano": 2025
+        },
+        "horario_partida": "2025-12-12T12:30:00-03:00",
+        "horario_chegada": "2025-12-12T13:00:00-03:00",
+        "preco": 15,
+        "assentos_livres": 2
+      }
+    ],
+    "ativa": false
   }
 ]
