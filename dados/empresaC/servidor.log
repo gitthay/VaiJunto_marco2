@@ -3908,3 +3908,5 @@
 [2026-10-31 20:24:49] [RESPOSTA] Para: 172.19.0.1:59254 (Usuario: sim_passageiro_18_1793478269214712100@email.com) | Acao: RESERVAR_TRECHO | Sucesso: false | Msg: reserva cancelada: servidor http://empresaA:9081 indisponível (Post "http://empresaA:9081/api/2pc/prepare": context deadline exceeded (Client.Timeout exceeded while awaiting headers)) | Payload: 
 [2026-10-31 20:24:49] [DESCONEXAO] Cliente 172.19.0.1:59254 desconectou normalmente.
 [2026-10-31 20:24:49] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_18_1793478269214712100@email.com liberada.
+[2026-10-31 20:42:10] [HEARTBEAT] Servidor parceiro http://empresaA:9081 ficou OFFLINE (timeout/falha detectada).
+[2026-10-31 20:42:13] [HEARTBEAT] Servidor parceiro http://empresaB:9082 ficou OFFLINE (timeout/falha detectada).
