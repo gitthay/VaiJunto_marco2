@@ -31,7 +31,7 @@ func enviarReqSimulador(conn net.Conn, acao utils.TipoAcao, usuario string, payl
 		return utils.MensagemResposta{}, err
 	}
 
-	buf := make([]byte, 16384)
+	buf := make([]byte, 32768)
 	n, err := conn.Read(buf)
 	if err != nil {
 		return utils.MensagemResposta{}, err
@@ -58,13 +58,13 @@ func publicarCaronasCenarioConsorcio(servidores []string, assentosPorCarona int,
 
 	for i, srv := range servidores {
 		rota := rotas[i%len(rotas)]
-		conn, err := net.DialTimeout("tcp", srv, 3*time.Second)
+		conn, err := net.DialTimeout("tcp", srv, 4*time.Second)
 		if err != nil {
 			log.Printf("[AVISO] Não foi possível conectar ao servidor %s para semear carona: %v\n", srv, err)
 			continue
 		}
 
-		motoristaEmail := fmt.Sprintf("motorista_sim_%d@consorcio.com", i+1)
+		motoristaEmail := fmt.Sprintf("motorista_sim_%d_%d@consorcio.com", i+1, time.Now().UnixNano()%10000)
 		_, _ = enviarReqSimulador(conn, utils.AcaoAutenticar, motoristaEmail, map[string]interface{}{
 			"email": motoristaEmail,
 			"senha": "123",
@@ -103,8 +103,9 @@ func publicarCaronasCenarioConsorcio(servidores []string, assentosPorCarona int,
 
 func main() {
 	servidoresFlag := flag.String("servers", "localhost:8081,localhost:8082,localhost:8083", "Endereços TCP dos servidores das empresas do consórcio separados por vírgula")
-	qtdPassageiros := flag.Int("clientes", 300, "Quantidade de passageiros simultâneos gerando buscas e reservas")
+	qtdPassageiros := flag.Int("clientes", 30, "Quantidade de passageiros simultâneos gerando buscas e reservas")
 	assentosOferta := flag.Int("assentos", 10, "Quantidade de assentos ofertados em cada trecho para o teste de carga")
+	maxWorkersSimultaneos := flag.Int("fila", 45, "Tamanho máximo de conexões simultâneas na fila de disparo")
 	origemBusca := flag.String("origem", "Salvador", "Cidade de origem para as buscas dos passageiros")
 	destinoBusca := flag.String("destino", "Montes Claros", "Cidade de destino para as buscas dos passageiros")
 	semear := flag.Bool("seed", true, "Publicar automaticamente caronas distribuídas entre as empresas antes da carga")
@@ -121,7 +122,7 @@ func main() {
 	fmt.Println("   SIMULADOR AUTÔNOMO DE PASSAGEIROS — CONSÓRCIO VAIJUNTO (2PC)   ")
 	fmt.Println("==================================================================")
 	fmt.Printf("Servidores alvo : %v\n", servidores)
-	fmt.Printf("Passageiros     : %d simultâneos\n", *qtdPassageiros)
+	fmt.Printf("Passageiros     : %d (Fila de concorrência: %d workers)\n", *qtdPassageiros, *maxWorkersSimultaneos)
 	fmt.Printf("Rota buscada    : %s -> %s (Data: %s)\n", *origemBusca, *destinoBusca, dataViagem.String())
 	fmt.Println("------------------------------------------------------------------")
 
@@ -140,26 +141,32 @@ func main() {
 		latencias         []time.Duration
 	)
 
+	// Fila controlada por canal (semáforo) para evitar estourar o limite de sockets (SOMAXCONN) do Windows
+	filaConcorrencia := make(chan struct{}, *maxWorkersSimultaneos)
+
 	inicioSimulacao := time.Now()
 	wg.Add(*qtdPassageiros)
 
 	for i := 1; i <= *qtdPassageiros; i++ {
 		idxPassageiro := i
-		// Distribui os passageiros entre todos os servidores do consórcio (Round-Robin)
 		servidorEscolhido := servidores[(idxPassageiro-1)%len(servidores)]
 
 		go func(id int, enderecoTCP string) {
 			defer wg.Done()
 
+			// Entra na fila antes de abrir o socket TCP
+			filaConcorrencia <- struct{}{}
+			defer func() { <-filaConcorrencia }()
+
 			inicioOp := time.Now()
-			conn, err := net.DialTimeout("tcp", enderecoTCP, 4*time.Second)
+			conn, err := net.DialTimeout("tcp", enderecoTCP, 8*time.Second)
 			if err != nil {
 				atomic.AddInt64(&errosConexao, 1)
 				return
 			}
 			defer conn.Close()
 
-			email := fmt.Sprintf("sim_passageiro_%d_%d@email.com", id, time.Now().UnixNano()%100000)
+			email := fmt.Sprintf("sim_passageiro_%d_%d@email.com", id, time.Now().UnixNano())
 
 			// 1. Autentica no servidor da sua empresa
 			respAuth, err := enviarReqSimulador(conn, utils.AcaoAutenticar, email, map[string]interface{}{
@@ -191,7 +198,7 @@ func main() {
 				return
 			}
 
-			// Escolhe o último itinerário semeado (ou o primeiro disponível) e solicita reserva atômica (2PC)
+			// Escolhe o último itinerário semeado e solicita reserva atômica (2PC)
 			itinEscolhido := itinerarios[len(itinerarios)-1]
 			respRes, err := enviarReqSimulador(conn, utils.AcaoReservarTrecho, email, itinEscolhido)
 			duracao := time.Since(inicioOp)
@@ -241,4 +248,3 @@ func main() {
 	}
 	fmt.Println("==================================================================")
 }
-

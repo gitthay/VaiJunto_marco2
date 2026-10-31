@@ -28,8 +28,13 @@ var (
 	muLamport         sync.Mutex
 	muCoordenador2PC  sync.Mutex
 	transacoesMemoria []Transacao2PC // Mantém os bloqueios temporários de 2PC exclusivamente em RAM (sem arquivo extra)
-	clienteHTTP       = &http.Client{Timeout: 2500 * time.Millisecond}
-	clienteHeartbeat  = &http.Client{Timeout: 1200 * time.Millisecond}
+	transporteHTTP    = &http.Transport{
+		MaxIdleConns:        500,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     30 * time.Second,
+	}
+	clienteHTTP      = &http.Client{Timeout: 4000 * time.Millisecond, Transport: transporteHTTP}
+	clienteHeartbeat = &http.Client{Timeout: 1500 * time.Millisecond, Transport: transporteHTTP}
 )
 
 // IncrementarLamport avança o relógio lógico local em um evento interno ou envio de mensagem
@@ -533,7 +538,11 @@ func tentarPreempcaoPorPrecedencia(caronas *[]Carona, transacoes *[]Transacao2PC
 			continue
 		}
 
-		if reqNova.CoordenadorURL != tx.CoordenadorURL && CompararPrecedencia(
+		// Aplica preempção por precedência de Lamport se houver deadlock (transação presa há > 250ms)
+		// ou em validação direta sem peers ativos, evitando que rajadas de 300 clientes abortem transações
+		// que já estão em trânsito prestes a enviar o COMMIT!
+		emPossivelDeadlockOuTeste := len(PeersConsorcio) == 0 || time.Since(tx.CriadoEm) > 250*time.Millisecond
+		if emPossivelDeadlockOuTeste && reqNova.CoordenadorURL != tx.CoordenadorURL && CompararPrecedencia(
 			reqNova.TimestampLamport, reqNova.EmpresaOrigemID, reqNova.TransacaoID,
 			tx.TimestampLamport, tx.EmpresaOrigemID, tx.TransacaoID) {
 
