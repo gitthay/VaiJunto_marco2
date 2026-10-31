@@ -1,14 +1,48 @@
-version: '3.8'
-
 services:
-  servidor-vaijunto:
+  empresaA:
     build: .
-    container_name: vaijunto_server
+    image: vaijunto-servidor:latest
+    container_name: vaijunto_empresa_a
+    command:
+      - "-id=empresaA"
+      - "-tcp=:8081"
+      - "-http=:9081"
+      - "-url=${URL_EMPRESA_A:-http://empresaA:9081}"
+      - "-peers=${PEERS_EMPRESA_A:-http://empresaB:9082,http://empresaC:9083}"
     ports:
-      - "8080:8080"
+      - "8081:8081"
+      - "9081:9081"
     volumes:
-      - ./caronas.json:/app/caronas.json
-      - ./reservas.json:/app/reservas.json
-      - ./usuarios.json:/app/usuarios.json
-      - ./servidor.log:/app/servidor.log
-    
+      - ./dados/empresaA:/app/dados/empresaA
+
+  empresaB:
+    build: .
+    image: vaijunto-servidor:latest
+    container_name: vaijunto_empresa_b
+    command:
+      - "-id=empresaB"
+      - "-tcp=:8082"
+      - "-http=:9082"
+      - "-url=${URL_EMPRESA_B:-http://empresaB:9082}"
+      - "-peers=${PEERS_EMPRESA_B:-http://empresaA:9081,http://empresaC:9083}"
+    ports:
+      - "8082:8082"
+      - "9082:9082"
+    volumes:
+      - ./dados/empresaB:/app/dados/empresaB
+
+  empresaC:
+    build: .
+    image: vaijunto-servidor:latest
+    container_name: vaijunto_empresa_c
+    command:
+      - "-id=empresaC"
+      - "-tcp=:8083"
+      - "-http=:9083"
+      - "-url=${URL_EMPRESA_C:-http://empresaC:9083}"
+      - "-peers=${PEERS_EMPRESA_C:-http://empresaA:9081,http://empresaB:9082}"
+    ports:
+      - "8083:8083"
+      - "9083:9083"
+    volumes:
+      - ./dados/empresaC:/app/dados/empresaC

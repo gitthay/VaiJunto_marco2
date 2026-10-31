@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -311,13 +312,32 @@ func gerenciarConexao(conexao net.Conn) {
 }
 
 func main() {
-	ln, err := net.Listen("tcp", ":8080")
+	empresaID := flag.String("id", "default", "Identificador único da empresa no consórcio (ex: empA, empB, empC)")
+	portaTCP := flag.String("tcp", ":8080", "Porta TCP para clientes motorista/passageiro (ex: :8080)")
+	portaHTTP := flag.String("http", ":9080", "Porta HTTP da API REST do consórcio (ex: :9080)")
+	urlPropria := flag.String("url", "", "URL pública HTTP desta instância para o consórcio (ex: http://localhost:9080)")
+	peers := flag.String("peers", "", "Lista de URLs HTTP das outras empresas do consórcio separadas por vírgula")
+	flag.Parse()
+
+	if *urlPropria == "" {
+		*urlPropria = "http://localhost" + *portaHTTP
+	}
+
+	if err := utils.ConfigurarInstancia(*empresaID, *urlPropria); err != nil {
+		log.Fatalf("Erro ao configurar instância %s: %v", *empresaID, err)
+	}
+
+	// Inicia o servidor HTTP REST do consórcio, o Heartbeat e a recuperação automática de 2PC
+	utils.IniciarConsorcio(*portaHTTP, *peers)
+
+	ln, err := net.Listen("tcp", *portaTCP)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer ln.Close()
 
-	fmt.Println("Servidor rodando na porta 8080...")
+	fmt.Printf("Servidor da empresa [%s] rodando na porta TCP %s | API REST Consórcio em %s (Peers: %s)\n",
+		utils.EmpresaAtualID, *portaTCP, utils.ServidorAtualURL, *peers)
 
 	for {
 		conn, err := ln.Accept()

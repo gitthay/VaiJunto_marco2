@@ -1,0 +1,20 @@
+[2026-10-28 23:07:37] [CONEXAO] Novo cliente conectado de: [::1]:65229
+[2026-10-28 23:07:45] [REQUISICAO] De: [::1]:65229 | Usuario: thay | Acao: AUTENTICAR | Payload: {"email":"thay","senha":"123","tipo":"MOTORISTA"}
+[2026-10-28 23:07:45] [RESPOSTA] Para: [::1]:65229 (Usuario: thay) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-28 23:29:10] [ERRO CONEXAO] Erro na leitura do cliente [::1]:65229: read tcp [::1]:8081->[::1]:65229: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
+[2026-10-28 23:29:10] [DESCONEXAO] Sessão ativa do usuário thay liberada.
+[2026-10-28 23:30:33] [HEARTBEAT] Servidor parceiro http://localhost:9083 ficou OFFLINE (timeout/falha detectada).
+[2026-10-28 23:30:33] [HEARTBEAT] Servidor parceiro http://localhost:9082 ficou OFFLINE (timeout/falha detectada).
+[2026-10-28 23:30:45] [HEARTBEAT] Servidor parceiro http://localhost:9082 (empresaB) voltou a ficar ONLINE!
+[2026-10-28 23:30:57] [HEARTBEAT] Servidor parceiro http://localhost:9083 (empresaC) voltou a ficar ONLINE!
+[2026-10-28 23:32:05] [CONEXAO] Novo cliente conectado de: [::1]:50416
+[2026-10-28 23:32:11] [REQUISICAO] De: [::1]:50416 | Usuario: thay | Acao: AUTENTICAR | Payload: {"email":"thay","senha":"123","tipo":"MOTORISTA"}
+[2026-10-28 23:32:11] [RESPOSTA] Para: [::1]:50416 (Usuario: thay) | Acao: AUTENTICAR | Sucesso: true | Msg: Autenticação realizada com sucesso! | Payload: 
+[2026-10-28 23:33:17] [REQUISICAO] De: [::1]:50416 | Usuario: thay | Acao: PUBLICAR_CARONA | Payload: {"id":"CAR-1793241197280544300","motorista_id":"thay","assentos_tot":2,"trechos":[{"origem":"ssa","destino":"fsa","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T12:30:00-03:00","horario_chegada":"2025-12-12T13:00:00-03:00","preco":13,"assentos_livres":2},{"origem":"fsa","destino":"irece","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T13:00:00-03:00","horario_chegada":"2025-12-12T13:30:00-03:00","preco":15,"assentos_livres":2}],"ativa":true}
+[2026-10-28 23:34:50] [REQUISICAO] De: [::1]:50416 | Usuario: thay | Acao: CONSULTAR_CARONAS | Payload: null
+[2026-10-28 23:36:47] [2PC PREPARE] Transação TX-empresaC-1793241407138189400 (Lamport=1702, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-28 23:36:47] [2PC COMMIT] Transação TX-empresaC-1793241407138189400 CONFIRMADA definitivamente.
+[2026-10-28 23:44:19] [ERRO CONEXAO] Erro na leitura do cliente [::1]:50416: read tcp [::1]:8081->[::1]:50416: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
+[2026-10-28 23:44:19] [DESCONEXAO] Sessão ativa do usuário thay liberada.
+[2026-10-29 00:03:01] [HEARTBEAT] Servidor parceiro http://localhost:9082 ficou OFFLINE (timeout/falha detectada).
+[2026-10-29 00:03:13] [HEARTBEAT] Servidor parceiro http://localhost:9082 ficou OFFLINE (timeout/falha detectada).

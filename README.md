@@ -1,201 +1,194 @@
-# VaiJunto 🚗💨
+# VaiJunto — Consórcio de Caronas Compartilhadas 🚗💨
 
-Sistema de caronas compartilhadas para viagens de média e longa distância, desenvolvido para a disciplina **TEC502 — Concorrência e Conectividade**. O projeto implementa um servidor central em Go que gerencia caronas e reservas via **sockets TCP puros** (sem frameworks de RPC/mensageria), com clientes de terminal para motoristas e passageiros.
+Sistema distribuído de caronas compartilhadas para viagens de média e longa distância, desenvolvido para a disciplina **TEC502 — Concorrência e Conectividade** (**Problema 1** e **Problema 2: Consórcio de Caronas Compartilhadas**).
 
-## Contexto
+O projeto implementa múltiplos servidores independentes em Go (representando empresas distintas de um consórcio regional), onde:
+- **Clientes (motoristas e passageiros)** conectam-se exclusivamente ao servidor da sua própria empresa via **Sockets TCP puros** (JSON sobre TCP).
+- **Servidores das empresas do consórcio** cooperam de forma **100% descentralizada** via **API REST (HTTP/JSON)** utilizando **Batimento Cardíaco (Heartbeat)**, **Busca de Grafo Federada (BFS)**, **Two-Phase Commit (2PC)** com critério de precedência por **Relógio Lógico de Lamport** e recuperação automática de falhas (*Recovery* / *Presumed Abort*).
 
-Motoristas que já farão determinado trajeto publicam os assentos livres do veículo, e passageiros que precisam se deslocar entre as mesmas cidades reservam esses assentos, dividindo o custo da viagem. A rota é definida pelo motorista, e o sistema é responsável por descobrir e coordenar automaticamente os encontros entre a oferta (caronas publicadas) e a demanda (buscas dos passageiros).
+---
 
-## Principais funcionalidades
+## Principais Funcionalidades
 
-- **Autenticação/cadastro automático**: usuário se autentica com email/senha; se não existir, é cadastrado no primeiro acesso.
-- **Bloqueio de sessão simultânea**: um mesmo email não pode estar autenticado em duas conexões ao mesmo tempo.
-- **Publicação de caronas** com múltiplos trechos (rota composta por várias cidades), data, horários, preço e assentos por trecho.
-- **Controle de disponibilidade por trecho**: um assento ocupado entre a cidade A e B continua livre para os trechos seguintes da mesma carona.
-- **Busca de itinerários via BFS em grafo**: o servidor monta um grafo de cidades a partir das caronas ativas e busca caminhos que atendam origem/destino/data, combinando trechos de **motoristas diferentes** quando necessário.
-- **Reserva atômica de itinerário**: todos os trechos escolhidos são confirmados, ou nenhum é — protegido por *mutex* para evitar duplicidade de assento sob concorrência.
-- **Cancelamento de reserva**, com devolução dos assentos ocupados.
-- **Cancelamento de carona pelo motorista**, com aviso e confirmação explícita caso existam passageiros já reservados.
-- **Consulta de caronas e passageiros** por motorista.
-- **Log de auditoria** (`servidor.log`) de conexões, requisições e respostas.
+- **Descentralização e Isolamento de Dados**: Cada empresa mantém apenas os seus próprios arquivos (`dados/<empresa>/caronas.json`, `reservas.json`, `usuarios.json`, `transacoesgerais.json` e `servidor.log`), sem banco de dados compartilhado nem servidor central.
+- **Batimento Cardíaco (Heartbeat)**: Monitoramento contínuo entre os servidores do consórcio (`GET /api/heartbeat`). Se o servidor de uma empresa falhar/cair, os demais detectam imediatamente via timeout e continuam operando normalmente para todas as rotas que não dependem da empresa offline.
+- **Busca Federada de Itinerários (BFS em Grafo)**: Quando um passageiro busca uma viagem, o servidor de sua empresa consulta via REST (`GET /api/caronas`) os trechos disponíveis nas empresas parceiras online e monta o grafo unificado para encontrar roteiros combinando múltiplas empresas.
+- **Reserva Atômica Distribuída (Two-Phase Commit — 2PC)**:
+  - **Fase 1 (`POST /api/2pc/prepare`)**: O servidor do passageiro atua como coordenador daquela transação e solicita o bloqueio temporário dos assentos em cada empresa envolvida (em ordem determinística de URL para prevenir deadlocks distribuídos).
+  - **Fase 2 (`POST /api/2pc/commit` ou `/api/2pc/abort`)**: Se todas as empresas confirmarem disponibilidade, a reserva é efetivada em todas (`COMMITTED`). Se qualquer empresa recusar ou falhar, todas desfazem a pré-reserva imediatamente (`ABORTED`).
+- **Critério de Precedência Distribuída (Relógio Lógico de Lamport)**: Sem depender de relógios físicos sincronizados, cada transação carrega a tupla `(TimestampLamport, EmpresaOrigemID, TransacaoID)`. Em disputas simultâneas pelo último assento na fase `PREPARED`, vence de forma determinística a requisição com menor timestamp lógico.
+- **Tolerância a Falhas e Recuperação (`transacoesgerais.json`)**: Cada servidor registra apenas os IDs essenciais e referências locais das transações em andamento. Caso um servidor caia no meio de uma reserva ou o coordenador falhe, a rotina de *Recovery* consulta `GET /api/2pc/status` ou aplica *Presumed Abort* após o timeout, garantindo que **nenhum assento permaneça bloqueado indefinidamente**.
+- **Cancelamentos Cruzados via Requisição REST**:
+  - Se o passageiro cancelar uma reserva composta, seu servidor devolve os assentos locais e aciona `POST /api/reservas/liberar` nas empresas parceiras.
+  - Se um motorista cancelar sua carona, o servidor dele devolve os assentos locais e notifica o servidor do passageiro (`POST /api/caronas/cancelada`), que remove a reserva do passageiro e libera os assentos das outras empresas envolvidas naquele itinerário.
 
-## Arquitetura
+---
 
-```
-┌────────────────┐        ┌────────────────┐
-│ Cliente         │        │ Cliente         │
-│ Motorista       │        │ Passageiro      │
-│ (mainmotorista) │        │ (mainpassageiro)│
-└────────┬────────┘        └────────┬────────┘
-         │        TCP / JSON        │
-         └────────────┬─────────────┘
-                       │
-              ┌────────▼─────────┐
-              │  Servidor TCP     │
-              │  (main.go)        │
-              │  - 1 goroutine/   │
-              │    conexão        │
-              └────────┬─────────┘
-                       │
-              ┌────────▼─────────┐
-              │  Pacote utils     │
-              │  - protocolos.go  │
-              │  - servicos.go    │
-              │  (grafo, reservas,│
-              │   persistência)   │
-              └────────┬─────────┘
-                       │
-        caronas.json · reservas.json · usuarios.json
+## Arquitetura do Sistema
+
+```text
+ ┌────────────────────┐             ┌────────────────────┐             ┌────────────────────┐
+ │ Clientes Empresa A │             │ Clientes Empresa B │             │ Clientes Empresa C │
+ │ (Motorista/Passag.)│             │ (Motorista/Passag.)│             │ (Motorista/Passag.)│
+ └─────────┬──────────┘             └─────────┬──────────┘             └─────────┬──────────┘
+           │ TCP (:8081)                      │ TCP (:8082)                      │ TCP (:8083)
+           ▼                                  ▼                                  ▼
+ ┌────────────────────┐  HTTP REST  ┌────────────────────┐  HTTP REST  ┌────────────────────┐
+ │ Servidor Empresa A │◄───────────►│ Servidor Empresa B │◄───────────►│ Servidor Empresa C │
+ │   REST (:9081)     │ (Heartbeat, │   REST (:9082)     │ (Heartbeat, │   REST (:9083)     │
+ │  dados/empresaA/   │  BFS, 2PC)  │  dados/empresaB/   │  BFS, 2PC)  │  dados/empresaC/   │
+ └────────────────────┘             └────────────────────┘             └────────────────────┘
 ```
 
-- **`main.go`**: servidor TCP. Aceita conexões, dispara uma goroutine por cliente (`gerenciarConexao`) e roteia as ações do protocolo.
-- **`mainmotorista.go`** / **`mainpassageiro.go`**: clientes de terminal (CLI) que se conectam ao servidor via `net.Dial("tcp", ...)`, com endereço configurável pela flag `-server`.
-- **`protocolos.go`**: definição do protocolo de aplicação — tipos de mensagem (`MensagemRequisicao` / `MensagemResposta`), ações (`TipoAcao`) e entidades de domínio (`Carona`, `Trecho`, `Reserva`, `Usuario`, `Data`).
-- **`servicos.go`**: regras de negócio — montagem do grafo de cidades, busca de itinerários (BFS), consolidação de trechos contínuos da mesma carona, persistência em JSON e controle de concorrência (`sync.Mutex`).
-- **`concorrencia_test.go`**: suíte de testes automatizados (unitários + integração/estresse contra o servidor real).
+### Documentação dos Protocolos
+- **Protocolo TCP (Cliente ↔ Servidor Local)**: documentado em [`utils/protocolos.md`](utils/protocolos.md).
+- **Especificação da API REST entre Servidores + Diagrama de Sequência 2PC**: documentada em [`utils/api_consorcio.md`](utils/api_consorcio.md).
 
-## Protocolo de aplicação
+---
 
-Comunicação via **TCP bruto**, com mensagens serializadas em **JSON**. Toda requisição segue o envelope:
+## Estrutura de Arquivos
 
-```json
-{
-  "acao": "BUSCAR_ITINERARIO",
-  "usuario": "email@exemplo.com",
-  "payload": { "...": "..." }
-}
+```text
+redes_marco2/
+├── main.go                     # Ponto de entrada do servidor (TCP clientes + HTTP REST consórcio)
+├── utils/
+│   ├── protocolos.go           # Entidades de domínio, envelopes TCP e modelo TransacaoGeral (2PC)
+│   ├── servicos.go             # Grafo/BFS, persistência isolada por instância e regras locais
+│   ├── consorcio.go            # API REST, Heartbeat, Relógio de Lamport, 2PC e Recovery
+│   ├── protocolos.md           # Especificação do protocolo TCP cliente-servidor
+│   └── api_consorcio.md        # Especificação completa da API REST do consórcio + Diagrama Mermaid
+├── motorista/
+│   └── mainmotorista.go        # Cliente CLI do motorista (conecta via TCP à sua empresa)
+├── passageiro/
+│   └── mainpassageiro.go       # Cliente CLI do passageiro (conecta via TCP à sua empresa)
+├── simulador/
+│   └── mainsimulador.go        # Simulador autônomo de passageiros sob carga (sem interface gráfica)
+├── testes/
+│   └── concorrencia_test.go    # Testes unitários, concorrência, carga e injeção de falhas no 2PC
+├── dados/                      # Armazenamento isolado por instância de empresa (gerado em execução)
+│   ├── empresaA/               # caronas.json, reservas.json, usuarios.json, transacoesgerais.json
+│   ├── empresaB/
+│   └── empresaC/
+├── Dockerfile
+├── docker-compose.yml          # Orquestração das 3 instâncias isoladas do consórcio
+└── README.md
 ```
 
-E toda resposta:
+---
 
-```json
-{
-  "sucesso": true,
-  "mensagem": "Encontrado(s) 2 itinerário(s) disponível(is).",
-  "payload": { "...": "..." }
-}
-```
-
-### Ações suportadas (`TipoAcao`)
-
-| Ação | Descrição |
-|---|---|
-| `AUTENTICAR` | Autentica o usuário ou cadastra automaticamente no primeiro acesso |
-| `PUBLICAR_CARONA` | Motorista publica uma nova carona com um ou mais trechos |
-| `CONSULTAR_CARONAS` | Lista as caronas publicadas por um motorista |
-| `CANCELAR_CARONA` | Cancela uma carona (com confirmação se houver passageiros) |
-| `BUSCAR_ITINERARIO` | Passageiro busca itinerários entre origem/destino/data |
-| `RESERVAR_TRECHO` | Confirma a reserva atômica de um itinerário |
-| `LISTAR_RESERVAS` | Lista as reservas ativas de um passageiro |
-| `CANCELAR_RESERVA` | Cancela uma reserva e libera os assentos |
-| `CONSULTAR_PASSAGEIROS_CARONA` | Lista os passageiros confirmados em uma carona |
-
-Mensagens malformadas (JSON inválido) são detectadas e descartadas pelo servidor, que encerra a conexão do remetente sem afetar os demais clientes.
-
-## Controle de concorrência
-
-- Um `sync.Mutex` global protege as operações de leitura/escrita dos arquivos `caronas.json` e `reservas.json`, garantindo que a validação e a confirmação de um itinerário aconteçam de forma atômica.
-- O passageiro que confirmar a reserva primeiro mantém a preferência sobre os assentos disputados; os demais recebem erro e podem tentar outro itinerário.
-- Um `map` protegido por mutex (`usuariosLogados`) impede login simultâneo do mesmo email em mais de uma conexão, liberando a sessão automaticamente se o cliente cair (`io.EOF` ou erro de leitura).
-- Não é usado nenhum banco de dados ou serviço externo de coordenação — a exclusão mútua é feita inteiramente pela aplicação.
-
-## Pacotes e dependências
-
-O projeto utiliza **exclusivamente a biblioteca padrão do Go** — não há nenhuma dependência externa (nenhum framework de rede ou RPC), conforme exigido. Pacotes usados:
-
-| Pacote | Uso |
-|---|---|
-| `net` | Sockets TCP (servidor e clientes) |
-| `encoding/json` | Serialização do protocolo de aplicação |
-| `sync` | `Mutex` para exclusão mútua sobre o estado compartilhado |
-| `bufio`, `os` | Leitura de entrada do usuário nos clientes de terminal |
-| `flag` | Flag `-server` para configurar o endereço do servidor nos clientes |
-| `time` | Datas, horários e medição de tempo de resposta nos testes |
-| `strconv`, `strings` | Parsing e validação de entrada do usuário |
-| `fmt`, `log` | Saída de console e logging |
-| `testing` | Suíte de testes automatizados |
-
-Como não há dependências de terceiros, o `go.mod` não referencia nenhum módulo externo e o comando `go mod download` no `Dockerfile` não baixa pacote algum — ele é mantido por ser a etapa padrão de build Go, e passaria a baixar dependências automaticamente caso alguma fosse adicionada no futuro.
-
-
-## Como executar
+## Como Executar
 
 ### Pré-requisitos
-- Go 1.22+
-- Docker e Docker Compose (para rodar o servidor em contêiner)
+- **Go 1.22+**
+- **Docker e Docker Compose** (opcional para execução em contêineres)
 
-### Subindo o servidor com Docker
+---
+
+### Opção 1: Subindo o Consórcio (3 Empresas) com Docker Compose
+
+Para subir as 3 instâncias (`empresaA`, `empresaB` e `empresaC`) simultaneamente em contêineres isolados:
 
 ```bash
 docker compose up --build
 ```
 
-O servidor sobe na porta `8080` e persiste `caronas.json`, `reservas.json`, `usuarios.json` e `servidor.log` na raiz do projeto (via volumes).
+Portas expostas:
+- **Empresa A**: TCP `localhost:8081` | HTTP REST `http://localhost:9081`
+- **Empresa B**: TCP `localhost:8082` | HTTP REST `http://localhost:9082`
+- **Empresa C**: TCP `localhost:8083` | HTTP REST `http://localhost:9083`
 
-### Rodando o servidor localmente (sem Docker)
+#### Executando em Computadores Distintos do Laboratório (1 Contêiner por Máquina)
+Se desejar rodar cada empresa em uma máquina física diferente (ex.: IPs `192.168.1.10`, `192.168.1.11` e `192.168.1.12`):
 
-```bash
-go run main.go
+- **Máquina 1 (`192.168.1.10` — Empresa A)**:
+  ```powershell
+  $env:URL_EMPRESA_A="http://192.168.1.10:9081"
+  $env:PEERS_EMPRESA_A="http://192.168.1.11:9082,http://192.168.1.12:9083"
+  docker compose up --build empresaA
+  ```
+- **Máquina 2 (`192.168.1.11` — Empresa B)**:
+  ```powershell
+  $env:URL_EMPRESA_B="http://192.168.1.11:9082"
+  $env:PEERS_EMPRESA_B="http://192.168.1.10:9081,http://192.168.1.12:9083"
+  docker compose up --build empresaB
+  ```
+- **Máquina 3 (`192.168.1.12` — Empresa C)**:
+  ```powershell
+  $env:URL_EMPRESA_C="http://192.168.1.12:9083"
+  $env:PEERS_EMPRESA_C="http://192.168.1.10:9081,http://192.168.1.11:9082"
+  docker compose up --build empresaC
+  ```
+
+---
+
+### Opção 2: Subindo as 3 Instâncias Localmente (Sem Docker)
+
+Abra 3 terminais e execute um comando em cada:
+
+```powershell
+# Terminal 1 — Empresa A
+go run main.go -id=empresaA -tcp=:8081 -http=:9081 -peers=http://localhost:9082,http://localhost:9083
+
+# Terminal 2 — Empresa B
+go run main.go -id=empresaB -tcp=:8082 -http=:9082 -peers=http://localhost:9081,http://localhost:9083
+
+# Terminal 3 — Empresa C
+go run main.go -id=empresaC -tcp=:8083 -http=:9083 -peers=http://localhost:9081,http://localhost:9082
 ```
 
-### Rodando os clientes
+---
 
-```bash
-# Cliente motorista
-go run ./motorista -server localhost:8080
+### Conectando os Clientes (Motorista e Passageiro)
 
-# Cliente passageiro
-go run ./passageiro -server localhost:8080
+Os clientes conectam-se exclusivamente à porta TCP do servidor de sua empresa usando a flag `-server`:
+
+```powershell
+# Motorista conectando na Empresa A (:8081)
+go run ./motorista/mainmotorista.go -server=localhost:8081
+
+# Motorista conectando na Empresa B (:8082)
+go run ./motorista/mainmotorista.go -server=localhost:8082
+
+# Passageiro conectando na Empresa C (:8083)
+go run ./passageiro/mainpassageiro.go -server=localhost:8083
 ```
 
-A flag `-server` permite apontar para o IP de outra máquina na rede (útil para testar servidor e clientes em computadores distintos do laboratório).
+---
 
-### Rodando os testes automatizados
+### Executando o Simulador Autônomo de Passageiros sob Carga
 
-Com o servidor já em execução (Docker ou `go run main.go`):
+Com as 3 instâncias em execução (`:8081`, `:8082`, `:8083`), rode o simulador para semear caronas inter-empresas e disparar múltiplos passageiros concorrentes buscando e reservando itinerários completos:
 
-```bash
-go test ./testes/... -v -args -server localhost:8080
+```powershell
+go run ./simulador/mainsimulador.go -servers="localhost:8081,localhost:8082,localhost:8083" -clientes=30 -assentos=10
 ```
 
-A suíte cobre:
-- **Testes unitários**: normalização de texto, consolidação de trechos, formatação de data.
-- **Testes de concorrência/integração** contra o servidor real: cadastro/autenticação simultânea de múltiplos usuários, buscas concorrentes de itinerários, reserva de itinerários compostos por caronas de motoristas diferentes, disputa pelo mesmo assento (garantindo que nenhum trecho é vendido duas vezes), cancelamento de carona com passageiros, bloqueio de login duplicado, queda abrupta de cliente e envio de mensagens malformadas.
-- **Teste de desempenho sob carga** (TestDesempenhoTempoResposta): dispara 50 requisições concorrentes de busca de itinerário, cada uma em sua própria conexão TCP, medindo o tempo de resposta (round-trip) individual de cada uma e reportando o tempo médio, mínimo e máximo observados.
+Parâmetros opcionais do simulador:
+- `-servers`: lista de endereços TCP dos servidores das empresas (padrão: `localhost:8081,localhost:8082,localhost:8083`)
+- `-clientes`: número de passageiros simultâneos (padrão: `30`)
+- `-assentos`: número de vagas ofertadas por trecho na semeadura (padrão: `10`)
+- `-seed`: `true`/`false` para publicar automaticamente as caronas antes do disparo (padrão: `true`)
 
-## Estrutura de arquivos
+---
 
-```
-pbl_redes/
-├── motorista/
-│   └── mainmotorista.go      # Cliente CLI do motorista
-├── passageiro/
-│   └── mainpassageiro.go     # Cliente CLI do passageiro
-├── testes/
-│   └── concorrencia_test.go   # Testes automatizados
-├── utils/
-│   ├── protocolos.go          # Protocolo e entidades de domínio
-│   └── servicos.go            # Regras de negócio, grafo/BFS e persistência
-├── main.go                    # Servidor TCP
-├── go.mod
-├── Dockerfile
-├── docker-compose.yml
-├── README.md
-├── caronas.json                # gerado em tempo de execução
-├── reservas.json                # gerado em tempo de execução
-├── usuarios.json                # gerado em tempo de execução
-└── servidor.log                 # gerado em tempo de execução
-```
+### Executando os Testes Automatizados
 
-## Restrições atendidas
+1. **Teste Automatizado do Consórcio (2PC sob Carga + Injeção de Falhas + Recovery)** — não exige servidores externos pré-iniciados (sobe instâncias HTTP em memória e injeta quedas automaticamente):
+   ```powershell
+   go test ./testes -run TestConsorcio2PCSobCargaEInjecaoDeFalhas -v
+   ```
+   Verifica que:
+   - Nenhum assento é confirmado para mais de um passageiro sob disputa simultânea;
+   - Nenhum itinerário é confirmado pela metade quando o servidor de uma empresa falha no meio da transação;
+   - Nenhum assento permanece bloqueado após a queda e recuperação de um servidor.
 
-- Comunicação implementada com a **API socket TCP nativa**, sem frameworks de RPC ou mensageria.
-- Estado do sistema mantido em um **único servidor central**, sem réplicas.
-- **Controle de concorrência implementado na aplicação**, sem delegar a SGBD ou serviço externo.
-- Servidor tolerante à queda abrupta de clientes, sem corromper o estado das reservas.
-- Mensagens trocadas em **JSON**, com validação e descarte de payloads malformados pelo receptor.
-- Backend containerizado via **Docker**.
+2. **Suíte Completa de Testes (Unitários + Integração TCP + Consórcio)** — com um servidor rodando na porta configurada (ex.: `:8080` ou `:8081`):
+   ```powershell
+   go test ./testes/... -v -args -server=localhost:8081
+   ```
+
+---
 
 ## Autor
 
-Trabalho desenvolvido por Thaylane da Silva para a disciplina TEC502 — Problema 1: VaiJunto, Caronas Compartilhadas.
+Trabalho desenvolvido por **Thaylane da Silva** para a disciplina **TEC502 — Concorrência e Conectividade** (UEFS).

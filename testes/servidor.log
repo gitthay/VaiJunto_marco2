@@ -1,0 +1,109 @@
+[2026-10-28 23:53:50] [2PC PREPARE] Transação TX-empresaA-1793242430008363400 (Lamport=1, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:53:50] [2PC ABORT] Transação TX-empresaA-1793242430008363400 ABORTADA e assentos liberados.
+[2026-10-28 23:54:29] [2PC PREPARE] Transação TX-empresaA-1793242469679685600 (Lamport=2, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:54:29] [2PC ABORT] Transação TX-empresaA-1793242469679685600 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545216744300 (Lamport=1, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545216744300 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545261779700 (Lamport=3, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545261779700 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545294773200 (Lamport=5, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545294773200 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545324440200 (Lamport=7, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545324440200 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545361751300 (Lamport=9, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545361751300 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545401180500 (Lamport=11, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545401180500 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545438341200 (Lamport=13, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545438341200 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545471036900 (Lamport=15, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545471036900 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545507238900 (Lamport=17, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545507238900 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545549305800 (Lamport=19, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545549305800 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545587701400 (Lamport=21, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545587701400 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545620941400 (Lamport=23, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545620941400 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545657896000 (Lamport=25, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545657896000 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545696463900 (Lamport=27, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545696463900 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545733326300 (Lamport=29, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545733326300 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545783279900 (Lamport=31, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545783279900 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545821345400 (Lamport=33, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545821345400 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545864311800 (Lamport=35, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545864311800 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545908710000 (Lamport=37, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545908710000 ABORTADA e assentos liberados.
+[2026-10-28 23:55:45] [2PC PREPARE] Transação TX-empresaA-1793242545945862500 (Lamport=39, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:55:45] [2PC ABORT] Transação TX-empresaA-1793242545945862500 ABORTADA e assentos liberados.
+[2026-10-28 23:56:40] [2PC PREPARE] Transação TX-empresaA-1793242600511685800 (Lamport=1, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:40] [2PC ABORT] Transação TX-empresaA-1793242600511685800 ABORTADA e assentos liberados.
+[2026-10-28 23:56:40] [2PC PREPARE] Transação TX-empresaA-1793242600580511700 (Lamport=3, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:40] [2PC ABORT] Transação TX-empresaA-1793242600580511700 ABORTADA e assentos liberados.
+[2026-10-28 23:56:40] [2PC PREPARE] Transação TX-empresaA-1793242600644997600 (Lamport=5, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:40] [2PC ABORT] Transação TX-empresaA-1793242600644997600 ABORTADA e assentos liberados.
+[2026-10-28 23:56:40] [2PC PREPARE] Transação TX-empresaA-1793242600712044300 (Lamport=7, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:40] [2PC ABORT] Transação TX-empresaA-1793242600712044300 ABORTADA e assentos liberados.
+[2026-10-28 23:56:40] [2PC PREPARE] Transação TX-empresaA-1793242600764841200 (Lamport=9, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:40] [2PC ABORT] Transação TX-empresaA-1793242600764841200 ABORTADA e assentos liberados.
+[2026-10-28 23:56:40] [2PC PREPARE] Transação TX-empresaA-1793242600840614500 (Lamport=11, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:40] [2PC ABORT] Transação TX-empresaA-1793242600840614500 ABORTADA e assentos liberados.
+[2026-10-28 23:56:40] [2PC PREPARE] Transação TX-empresaA-1793242600903206800 (Lamport=13, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:40] [2PC ABORT] Transação TX-empresaA-1793242600903206800 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242600971843200 (Lamport=15, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242600971843200 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601045005700 (Lamport=17, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601045005700 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601111291800 (Lamport=19, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601111291800 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601181076900 (Lamport=21, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601181076900 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601241788000 (Lamport=23, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601241788000 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601314547200 (Lamport=25, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601314547200 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601389884700 (Lamport=27, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601389884700 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601446997100 (Lamport=29, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601446997100 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601567544200 (Lamport=31, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601567544200 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601629247200 (Lamport=33, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601629247200 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601708562400 (Lamport=35, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601708562400 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601770551900 (Lamport=37, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601770551900 ABORTADA e assentos liberados.
+[2026-10-28 23:56:41] [2PC PREPARE] Transação TX-empresaA-1793242601840886800 (Lamport=39, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:56:41] [2PC ABORT] Transação TX-empresaA-1793242601840886800 ABORTADA e assentos liberados.
+[2026-10-28 23:57:59] [2PC PREPARE] Transação TX-empresaA-1793242679692613700 (Lamport=1, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:57:59] [2PC COMMIT] Transação TX-empresaA-1793242679692613700 CONFIRMADA definitivamente.
+[2026-10-28 23:57:59] [2PC PREPARE] Transação TX-empresaA-1793242679810284800 (Lamport=44, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-28 23:57:59] [2PC ABORT] Transação TX-empresaA-1793242679810284800 ABORTADA e assentos liberados.
+[2026-10-28 23:57:59] [2PC PREPARE] Transação TX-ORFA-999 (Lamport=500, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-28 23:57:59] [RECOVERY 2PC] Coordenador informou ABORT para transação TX-ORFA-999. Liberando assentos.
+[2026-10-28 23:57:59] [2PC ABORT] Transação TX-ORFA-999 ABORTADA e assentos liberados.
+[2026-10-29 00:10:30] [2PC PREPARE] Transação TX-empresaA-1793243430668326700 (Lamport=1, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-29 00:10:30] [2PC COMMIT] Transação TX-empresaA-1793243430668326700 CONFIRMADA definitivamente.
+[2026-10-29 00:10:30] [2PC PREPARE] Transação TX-empresaA-1793243430778584100 (Lamport=44, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-29 00:10:30] [2PC ABORT] Transação TX-empresaA-1793243430778584100 ABORTADA e assentos liberados.
+[2026-10-29 00:10:30] [2PC PREPARE] Transação TX-ORFA-999 (Lamport=500, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-29 00:10:30] [RECOVERY 2PC] Coordenador informou ABORT para transação TX-ORFA-999. Liberando assentos.
+[2026-10-29 00:10:30] [2PC ABORT] Transação TX-ORFA-999 ABORTADA e assentos liberados.
+[2026-10-29 00:14:56] [2PC PREPARE] Transação TX-empresaA-1793243696408958100 (Lamport=1, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-29 00:14:56] [2PC COMMIT] Transação TX-empresaA-1793243696408958100 CONFIRMADA definitivamente.
+[2026-10-29 00:14:57] [2PC PREPARE] Transação TX-empresaA-1793243697221314800 (Lamport=44, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-29 00:14:57] [2PC ABORT] Transação TX-empresaA-1793243697221314800 ABORTADA e assentos liberados.
+[2026-10-29 00:14:57] [2PC PREPARE] Transação TX-ORFA-999 (Lamport=500, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-29 00:14:57] [RECOVERY 2PC] Coordenador informou ABORT para transação TX-ORFA-999. Liberando assentos.
+[2026-10-29 00:14:57] [2PC ABORT] Transação TX-ORFA-999 ABORTADA e assentos liberados.
+[2026-10-29 00:14:57] [2PC PREPARE] Transação TX-EMP-C-LENTA (Lamport=50, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-29 00:14:57] [PRECEDENCIA LAMPORT] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Emp=empresaB) venceu disputa contra TX-EMP-C-LENTA (Lamport=50, Emp=empresaC)
+[2026-10-29 00:14:57] [2PC PREPARE] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Origem=empresaB) PREPARADA com sucesso.
+[2026-10-29 00:14:57] [2PC COMMIT] Transação TX-EMP-B-PRIORITARIA CONFIRMADA definitivamente.

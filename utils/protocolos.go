@@ -34,11 +34,43 @@ type Carona struct {
 
 // estrutura de reserva
 type Reserva struct {
-	ID           string    `json:"id"`
-	PassageiroID string    `json:"passageiro_id"`
+	ID           string         `json:"id"`
+	PassageiroID string         `json:"passageiro_id"`
 	Itinerario   []ArestaTrecho `json:"itinerario"`
-	ValorTotal   float64   `json:"valor_total"`
-	DataCriacao  time.Time `json:"data_criacao"`
+	ValorTotal   float64        `json:"valor_total"`
+	DataCriacao  time.Time      `json:"data_criacao"`
+}
+
+// EstadoTransacao representa o estágio do Two-Phase Commit (2PC)
+type EstadoTransacao string
+
+const (
+	EstadoPrepared  EstadoTransacao = "PREPARED"
+	EstadoCommitted EstadoTransacao = "COMMITTED"
+	EstadoAborted   EstadoTransacao = "ABORTED"
+)
+
+// ReferenciaTrechoLocal guarda apenas os IDs essenciais do trecho desta própria empresa na transação
+type ReferenciaTrechoLocal struct {
+	CaronaID string `json:"carona_id"`
+	Origem   string `json:"origem"`
+	Destino  string `json:"destino"`
+}
+
+// TransacaoGeral guarda apenas os metadados e IDs essenciais da transação 2PC
+// sem copiar dados de caronas de outras empresas (evitando centralização)
+type TransacaoGeral struct {
+	TransacaoID             string                  `json:"transacao_id"`
+	ReservaID               string                  `json:"reserva_id,omitempty"`
+	PassageiroID            string                  `json:"passageiro_id"`
+	EmpresaOrigemID         string                  `json:"empresa_origem_id"`
+	CoordenadorURL          string                  `json:"coordenador_url"`
+	ServidoresParticipantes []string                `json:"servidores_participantes,omitempty"`
+	TimestampLamport        uint64                  `json:"timestamp_lamport"`
+	Estado                  EstadoTransacao         `json:"estado"`
+	TrechosLocais           []ReferenciaTrechoLocal `json:"trechos_locais,omitempty"`
+	CriadoEm                time.Time               `json:"criado_em"`
+	ExpiraEm                time.Time               `json:"expira_em"`
 }
 
 // TipoAcao representa o tipo de ação que o cliente deseja realizar no servidor

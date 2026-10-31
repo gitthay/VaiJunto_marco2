@@ -1,0 +1,11 @@
+[2026-10-28 23:30:46] [HEARTBEAT] Servidor parceiro http://localhost:9083 ficou OFFLINE (timeout/falha detectada).
+[2026-10-28 23:30:58] [HEARTBEAT] Servidor parceiro http://localhost:9083 (empresaC) voltou a ficar ONLINE!
+[2026-10-28 23:32:19] [CONEXAO] Novo cliente conectado de: [::1]:50418
+[2026-10-28 23:33:27] [REQUISICAO] De: [::1]:50418 | Usuario: gab | Acao: AUTENTICAR | Payload: {"email":"gab","senha":"123","tipo":"MOTORISTA"}
+[2026-10-28 23:33:27] [RESPOSTA] Para: [::1]:50418 (Usuario: gab) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-28 23:34:42] [REQUISICAO] De: [::1]:50418 | Usuario: gab | Acao: PUBLICAR_CARONA | Payload: {"id":"CAR-1793241282878820200","motorista_id":"gab","assentos_tot":2,"trechos":[{"origem":"fsa","destino":"irece","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T15:00:00-03:00","horario_chegada":"2025-12-12T15:30:00-03:00","preco":15,"assentos_livres":2},{"origem":"irece","destino":"ilheus","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T15:30:00-03:00","horario_chegada":"2025-12-12T16:00:00-03:00","preco":15,"assentos_livres":2}],"ativa":true}
+[2026-10-28 23:34:45] [REQUISICAO] De: [::1]:50418 | Usuario: gab | Acao: CONSULTAR_CARONAS | Payload: null
+[2026-10-28 23:36:47] [2PC PREPARE] Transação TX-empresaC-1793241407138189400 (Lamport=1702, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-28 23:36:47] [2PC COMMIT] Transação TX-empresaC-1793241407138189400 CONFIRMADA definitivamente.
+[2026-10-28 23:44:14] [ERRO CONEXAO] Erro na leitura do cliente [::1]:50418: read tcp [::1]:8082->[::1]:50418: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
+[2026-10-28 23:44:14] [DESCONEXAO] Sessão ativa do usuário gab liberada.

@@ -20,8 +20,8 @@ WORKDIR /app
 # Copia o servidor compilado
 COPY --from=builder /app/server_bin .
 
-# Libera a porta 8080 do servidor TCP
-EXPOSE 8080
+# Libera as portas TCP (clientes) e HTTP (API REST do consórcio)
+EXPOSE 8080 9080
 
-# Executa o servidor quando o contêiner ligar
-CMD ["./server_bin"]
+# Executa o servidor aceitando flags (-id, -tcp, -http, -url, -peers)
+ENTRYPOINT ["./server_bin"]

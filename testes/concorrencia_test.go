@@ -1,10 +1,13 @@
 package testes
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"sync"
 	"testing"
@@ -752,4 +755,291 @@ func TestDesempenhoTempoResposta(t *testing.T) {
 	t.Logf("🚀 Menor Tempo (Mais rápido): %v", min)
 	t.Logf("⏳ Maior Tempo (Mais lento):  %v", max)
 	t.Logf("==================================================")
+}
+
+// 16. Teste do Consórcio (Problema 2): Sob Carga e com Injeção de Falhas (Two-Phase Commit, Lamport e Recovery)
+// Verifica que:
+//   (a) Nenhum assento é confirmado para mais de um passageiro sob disputa simultânea;
+//   (b) Nenhum itinerário é confirmado pela metade quando o servidor de uma empresa falha;
+//   (c) Nenhum assento permanece bloqueado após a queda e recuperação de um servidor participante/coordenador.
+func TestConsorcio2PCSobCargaEInjecaoDeFalhas(t *testing.T) {
+	pastaTemp, err := os.MkdirTemp("", "teste_consorcio_2pc_*")
+	if err != nil {
+		t.Fatalf("Erro ao criar diretório temporário: %v", err)
+	}
+	defer os.RemoveAll(pastaTemp)
+
+	// Salva a configuração original e restaura ao final do teste
+	origCaronas := utils.ArquivoCaronas
+	origReservas := utils.ArquivoReservas
+	origTransacoes := utils.ArquivoTransacoes
+	origEmp := utils.EmpresaAtualID
+	origURL := utils.ServidorAtualURL
+	defer func() {
+		utils.ArquivoCaronas = origCaronas
+		utils.ArquivoReservas = origReservas
+		utils.ArquivoTransacoes = origTransacoes
+		utils.EmpresaAtualID = origEmp
+		utils.ServidorAtualURL = origURL
+	}()
+
+	utils.ArquivoCaronas = pastaTemp + "/caronas.json"
+	utils.ArquivoReservas = pastaTemp + "/reservas.json"
+	utils.ArquivoTransacoes = pastaTemp + "/transacoesgerais.json"
+	utils.EmpresaAtualID = "empresaA"
+
+	// Sobe o servidor HTTP REST da Empresa A (local)
+	srvA := httptest.NewServer(utils.ConfigurarRotasConsorcio())
+	defer srvA.Close()
+	utils.ServidorAtualURL = srvA.URL
+
+	// Simula o servidor HTTP REST da Empresa B (com controle de vagas e injeção de falha)
+	var muB sync.Mutex
+	assentosB := 1
+	empresaBAtiva := true
+	var transacoesB = make(map[string]utils.EstadoTransacao)
+
+	muxB := http.NewServeMux()
+	muxB.HandleFunc("/api/2pc/prepare", func(w http.ResponseWriter, r *http.Request) {
+		muB.Lock()
+		defer muB.Unlock()
+		if !empresaBAtiva {
+			http.Error(w, "servidor Empresa B fora do ar", http.StatusServiceUnavailable)
+			return
+		}
+		var req utils.Requisicao2PCPrepare
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		w.Header().Set("Content-Type", "application/json")
+		if assentosB <= 0 {
+			w.WriteHeader(http.StatusConflict)
+			_ = json.NewEncoder(w).Encode(utils.Resposta2PC{
+				Sucesso:  false,
+				Estado:   utils.EstadoAborted,
+				Mensagem: "Sem assentos na Empresa B",
+				Lamport:  req.TimestampLamport + 1,
+			})
+			return
+		}
+		assentosB--
+		transacoesB[req.TransacaoID] = utils.EstadoPrepared
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(utils.Resposta2PC{
+			Sucesso: true,
+			Estado:  utils.EstadoPrepared,
+			Lamport: req.TimestampLamport + 1,
+		})
+	})
+	muxB.HandleFunc("/api/2pc/commit", func(w http.ResponseWriter, r *http.Request) {
+		muB.Lock()
+		defer muB.Unlock()
+		var req utils.Requisicao2PCDecisao
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		transacoesB[req.TransacaoID] = utils.EstadoCommitted
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(utils.Resposta2PC{Sucesso: true, Estado: utils.EstadoCommitted})
+	})
+	muxB.HandleFunc("/api/2pc/abort", func(w http.ResponseWriter, r *http.Request) {
+		muB.Lock()
+		defer muB.Unlock()
+		var req utils.Requisicao2PCDecisao
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		if transacoesB[req.TransacaoID] == utils.EstadoPrepared {
+			assentosB++
+		}
+		transacoesB[req.TransacaoID] = utils.EstadoAborted
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(utils.Resposta2PC{Sucesso: true, Estado: utils.EstadoAborted})
+	})
+	srvB := httptest.NewServer(muxB)
+	defer srvB.Close()
+
+	// Publica carona local na Empresa A com apenas 1 assento livre (Salvador -> Feira)
+	caronaA := utils.Carona{
+		ID:          "CAR-EMP-A-1",
+		MotoristaID: "motA@email.com",
+		AssentosTot: 1,
+		Ativa:       true,
+		Trechos: []utils.Trecho{{
+			Origem:         "Salvador",
+			Destino:        "Feira de Santana",
+			DataPartida:    utils.NovaData(20, 11, 2026),
+			HorarioPartida: time.Now(),
+			HorarioChegada: time.Now().Add(time.Hour),
+			Preco:          25.0,
+			AssentosLivre:  1,
+		}},
+	}
+	if err := utils.SalvarCarona(caronaA); err != nil {
+		t.Fatalf("Falha ao salvar carona na Empresa A: %v", err)
+	}
+
+	itinInterEmpresas := utils.Itinerario{
+		PrecoTotal: 90.0,
+		Trechos: []utils.ArestaTrecho{
+			{
+				CaronaID:    "CAR-EMP-A-1",
+				EmpresaID:   "empresaA",
+				ServidorURL: srvA.URL,
+				Origem:      "Salvador",
+				Destino:     "Feira de Santana",
+				Preco:       25.0,
+			},
+			{
+				CaronaID:    "CAR-EMP-B-1",
+				EmpresaID:   "empresaB",
+				ServidorURL: srvB.URL,
+				Origem:      "Feira de Santana",
+				Destino:     "Vitória da Conquista",
+				Preco:       65.0,
+			},
+		},
+	}
+
+	// PARTE A: 20 passageiros sob carga disputando simultaneamente o único assento inter-empresas
+	const concorrentes = 20
+	var wg sync.WaitGroup
+	var muCont sync.Mutex
+	confirmados := 0
+
+	wg.Add(concorrentes)
+	for i := 0; i < concorrentes; i++ {
+		passageiro := fmt.Sprintf("p_consorcio_%d@email.com", i)
+		go func(p string) {
+			defer wg.Done()
+			_, err := utils.CoordenarReserva2PC(p, itinInterEmpresas)
+			if err == nil {
+				muCont.Lock()
+				confirmados++
+				muCont.Unlock()
+			}
+		}(passageiro)
+	}
+	wg.Wait()
+
+	if confirmados != 1 {
+		t.Fatalf("[FALHA 2PC SOB CARGA]: Esperava exatamente 1 reserva confirmada para 1 assento, mas obteve %d", confirmados)
+	}
+	t.Log("[OK 1/3]: Sob carga simultânea, exatamente 1 passageiro reservou o último assento inter-empresas!")
+
+	// PARTE B: Injeção de Falha — Empresa A tem assento livre, mas Empresa B cai no meio da reserva!
+	// Nenhum itinerário pode ser confirmado pela metade e o assento da Empresa A deve voltar a ficar livre imediatamente.
+	caronasAtuais, _ := utils.CarregarCaronas()
+	caronasAtuais[0].Trechos[0].AssentosLivre = 1
+	dadosC, _ := json.MarshalIndent(caronasAtuais, "", "  ")
+	_ = os.WriteFile(utils.ArquivoCaronas, dadosC, 0644)
+
+	muB.Lock()
+	empresaBAtiva = false // Simula queda da Empresa B!
+	muB.Unlock()
+
+	_, errMeio := utils.CoordenarReserva2PC("passageiro_falha@email.com", itinInterEmpresas)
+	if errMeio == nil {
+		t.Fatalf("[FALHA ATOMICIDADE]: A reserva deveria ter abortado com a Empresa B fora do ar!")
+	}
+
+	caronasPosFalha, _ := utils.CarregarCaronas()
+	if caronasPosFalha[0].Trechos[0].AssentosLivre != 1 {
+		t.Fatalf("[FALHA ROLLBACK 2PC]: O assento da Empresa A ficou preso após falha da Empresa B (AssentosLivre=%d, esperava 1)",
+			caronasPosFalha[0].Trechos[0].AssentosLivre)
+	}
+	t.Log("[OK 2/3]: Injeção de falha validada! Queda da Empresa B fez rollback imediato na Empresa A (nenhum itinerário pela metade).")
+
+	// PARTE C: Queda de Coordenador após PREPARE e Recuperação Automática (Desbloqueio de Assento)
+	// Simula um coordenador externo que envia PREPARE bloqueando o último assento na Empresa A e cai antes de enviar COMMIT/ABORT.
+	coordenadorFantasma := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Quando a Empresa A consultar o status na recuperação, o coordenador informa ABORTED (Presumed Abort)
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(utils.Resposta2PC{
+			Sucesso: true,
+			Estado:  utils.EstadoAborted,
+		})
+	}))
+	defer coordenadorFantasma.Close()
+
+	reqOrfa := utils.Requisicao2PCPrepare{
+		TransacaoID:      "TX-ORFA-999",
+		ReservaID:        "RES-ORFA-999",
+		PassageiroID:     "orfao@email.com",
+		EmpresaOrigemID:  "empresaC",
+		CoordenadorURL:   coordenadorFantasma.URL,
+		TimestampLamport: 500,
+		TrechosLocais: []utils.ReferenciaTrechoLocal{{
+			CaronaID: "CAR-EMP-A-1",
+			Origem:   "Salvador",
+			Destino:  "Feira de Santana",
+		}},
+	}
+	bodyPrep, _ := json.Marshal(reqOrfa)
+	respPrep, err := http.Post(srvA.URL+"/api/2pc/prepare", "application/json", bytes.NewReader(bodyPrep))
+	if err != nil || respPrep.StatusCode != http.StatusOK {
+		t.Fatalf("Falha ao enviar PREPARE órfão para Empresa A")
+	}
+	respPrep.Body.Close()
+
+	// Confirma que o assento foi bloqueado temporariamente pelo PREPARE (AssentosLivre == 0)
+	caronasBloqueadas, _ := utils.CarregarCaronas()
+	if caronasBloqueadas[0].Trechos[0].AssentosLivre != 0 {
+		t.Fatalf("Assento deveria estar bloqueado em 0 durante o estado PREPARED")
+	}
+
+	// Executa a rotina de recuperação pós-queda/timeout da Empresa A
+	utils.RecuperarTransacoesPendentes()
+
+	caronasRecuperadas, _ := utils.CarregarCaronas()
+	if caronasRecuperadas[0].Trechos[0].AssentosLivre != 1 {
+		t.Fatalf("[FALHA RECOVERY]: O assento permaneceu bloqueado após a recuperação! AssentosLivre=%d",
+			caronasRecuperadas[0].Trechos[0].AssentosLivre)
+	}
+	t.Log("[OK 3/4]: Recuperação pós-queda validada! Nenhum assento permaneceu bloqueado após falha do coordenador.")
+
+	// PARTE D: Critério de Precedência Distribuída por Relógio Lógico de Lamport entre Servidores Distintos
+	// Simula o Servidor C (Lamport=50) segurando o último assento em PREPARED, e logo em seguida chega o
+	// Servidor B com uma requisição concorrente de MAIOR precedência (Lamport=10 < 50).
+	// O Servidor A deve conceder o assento ao Servidor B (menor Lamport) e abortar a pré-reserva de C!
+	reqMenorPrioridade := utils.Requisicao2PCPrepare{
+		TransacaoID:      "TX-EMP-C-LENTA",
+		ReservaID:        "RES-C-LENTA",
+		PassageiroID:     "passageiro_c@email.com",
+		EmpresaOrigemID:  "empresaC",
+		CoordenadorURL:   "http://empresaC:9083",
+		TimestampLamport: 50,
+		TrechosLocais: []utils.ReferenciaTrechoLocal{{
+			CaronaID: "CAR-EMP-A-1",
+			Origem:   "Salvador",
+			Destino:  "Feira de Santana",
+		}},
+	}
+	okC, _ := utils.ExecutarPrepareLocal(reqMenorPrioridade)
+	if !okC {
+		t.Fatalf("Transação inicial de C deveria ter preparado o assento livre")
+	}
+
+	reqMaiorPrioridade := utils.Requisicao2PCPrepare{
+		TransacaoID:      "TX-EMP-B-PRIORITARIA",
+		ReservaID:        "RES-B-PRIO",
+		PassageiroID:     "passageiro_b@email.com",
+		EmpresaOrigemID:  "empresaB",
+		CoordenadorURL:   "http://empresaB:9082",
+		TimestampLamport: 10, // Menor Timestamp de Lamport -> Maior Precedência!
+		TrechosLocais: []utils.ReferenciaTrechoLocal{{
+			CaronaID: "CAR-EMP-A-1",
+			Origem:   "Salvador",
+			Destino:  "Feira de Santana",
+		}},
+	}
+	okB, _ := utils.ExecutarPrepareLocal(reqMaiorPrioridade)
+	if !okB {
+		t.Fatalf("[FALHA PRECEDÊNCIA LAMPORT]: A transação de menor Lamport (10 < 50) deveria vencer a disputa pelo último assento!")
+	}
+
+	// Quando C tentar dar COMMIT, deve ser rejeitado pois sofreu preempção de Lamport; e B deve conseguir dar COMMIT!
+	commitC, _ := utils.ExecutarCommitLocal("TX-EMP-C-LENTA", "RES-C-LENTA")
+	if commitC {
+		t.Fatalf("[FALHA PRECEDÊNCIA]: A transação perdedora (Lamport 50) não poderia confirmar o assento!")
+	}
+	commitB, _ := utils.ExecutarCommitLocal("TX-EMP-B-PRIORITARIA", "RES-B-PRIO")
+	if !commitB {
+		t.Fatalf("[FALHA PRECEDÊNCIA]: A transação vencedora (Lamport 10) deveria confirmar o assento com sucesso!")
+	}
+	t.Log("[OK 4/4]: Critério de precedência por Relógio Lógico de Lamport entre servidores distintos validado com sucesso!")
 }

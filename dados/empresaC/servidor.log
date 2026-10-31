@@ -1,0 +1,15 @@
+[2026-10-28 23:32:29] [CONEXAO] Novo cliente conectado de: [::1]:50432
+[2026-10-28 23:35:01] [ERRO CONEXAO] Erro na leitura do cliente [::1]:50432: read tcp [::1]:8083->[::1]:50432: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
+[2026-10-28 23:35:25] [CONEXAO] Novo cliente conectado de: [::1]:50691
+[2026-10-28 23:35:33] [REQUISICAO] De: [::1]:50691 | Usuario: rodrigo | Acao: AUTENTICAR | Payload: {"email":"rodrigo","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-28 23:35:33] [RESPOSTA] Para: [::1]:50691 (Usuario: rodrigo) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-28 23:36:26] [REQUISICAO] De: [::1]:50691 | Usuario: rodrigo | Acao: BUSCAR_ITINERARIO | Payload: {"origem":"fsa","destino":"ilheus","data":{"dia":12,"mes":12,"ano":2025}}
+[2026-10-28 23:36:47] [REQUISICAO] De: [::1]:50691 | Usuario: rodrigo | Acao: RESERVAR_TRECHO | Payload: {"trechos":[{"carona_id":"CAR-1793241197280544300","motorista_id":"thay","empresa_id":"empresaA","servidor_url":"http://localhost:9081","origem":"fsa","destino":"irece","horario_partida":"2025-12-12T13:00:00-03:00","horario_chegada":"2025-12-12T13:30:00-03:00","preco":15,"assentos_livres":2},{"carona_id":"CAR-1793241282878820200","motorista_id":"gab","empresa_id":"empresaB","servidor_url":"http://localhost:9082","origem":"irece","destino":"ilheus","horario_partida":"2025-12-12T15:30:00-03:00","horario_chegada":"2025-12-12T16:00:00-03:00","preco":15,"assentos_livres":2}],"preco_total":30}
+[2026-10-28 23:44:11] [ERRO CONEXAO] Erro na leitura do cliente [::1]:50691: read tcp [::1]:8083->[::1]:50691: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
+[2026-10-28 23:44:11] [DESCONEXAO] Sessão ativa do usuário rodrigo liberada.
+[2026-10-29 00:03:01] [HEARTBEAT] Servidor parceiro http://localhost:9082 ficou OFFLINE (timeout/falha detectada).
+[2026-10-29 00:03:03] [HEARTBEAT] Servidor parceiro http://localhost:9081 ficou OFFLINE (timeout/falha detectada).
+[2026-10-29 00:03:12] [HEARTBEAT] Servidor parceiro http://localhost:9081 (empresaA) voltou a ficar ONLINE!
+[2026-10-29 00:03:19] [HEARTBEAT] Servidor parceiro http://localhost:9081 ficou OFFLINE (timeout/falha detectada).
+[2026-10-29 03:07:53] [HEARTBEAT] Servidor parceiro http://empresaA:9081 ficou OFFLINE (timeout/falha detectada).
+[2026-10-29 03:07:54] [HEARTBEAT] Servidor parceiro http://empresaB:9082 ficou OFFLINE (timeout/falha detectada).

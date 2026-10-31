@@ -1,0 +1,36 @@
+[
+  {
+    "id": "CAR-1793241282878820200",
+    "motorista_id": "gab",
+    "assentos_tot": 2,
+    "trechos": [
+      {
+        "origem": "fsa",
+        "destino": "irece",
+        "data_partida": {
+          "dia": 12,
+          "mes": 12,
+          "ano": 2025
+        },
+        "horario_partida": "2025-12-12T15:00:00-03:00",
+        "horario_chegada": "2025-12-12T15:30:00-03:00",
+        "preco": 15,
+        "assentos_livres": 2
+      },
+      {
+        "origem": "irece",
+        "destino": "ilheus",
+        "data_partida": {
+          "dia": 12,
+          "mes": 12,
+          "ano": 2025
+        },
+        "horario_partida": "2025-12-12T15:30:00-03:00",
+        "horario_chegada": "2025-12-12T16:00:00-03:00",
+        "preco": 15,
+        "assentos_livres": 1
+      }
+    ],
+    "ativa": true
+  }
+]

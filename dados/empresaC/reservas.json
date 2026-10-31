@@ -1,0 +1,34 @@
+[
+  {
+    "id": "RES-1793241407138189400",
+    "passageiro_id": "rodrigo",
+    "itinerario": [
+      {
+        "carona_id": "CAR-1793241197280544300",
+        "motorista_id": "thay",
+        "empresa_id": "empresaA",
+        "servidor_url": "http://localhost:9081",
+        "origem": "fsa",
+        "destino": "irece",
+        "horario_partida": "2025-12-12T13:00:00-03:00",
+        "horario_chegada": "2025-12-12T13:30:00-03:00",
+        "preco": 15,
+        "assentos_livres": 2
+      },
+      {
+        "carona_id": "CAR-1793241282878820200",
+        "motorista_id": "gab",
+        "empresa_id": "empresaB",
+        "servidor_url": "http://localhost:9082",
+        "origem": "irece",
+        "destino": "ilheus",
+        "horario_partida": "2025-12-12T15:30:00-03:00",
+        "horario_chegada": "2025-12-12T16:00:00-03:00",
+        "preco": 15,
+        "assentos_livres": 2
+      }
+    ],
+    "valor_total": 30,
+    "data_criacao": "2026-10-28T23:36:47.2558338-03:00"
+  }
+]
