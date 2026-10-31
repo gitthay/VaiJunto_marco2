@@ -373,3 +373,6 @@ func main() {
 		go gerenciarConexao(conn)
 	}
 }
+
+
+

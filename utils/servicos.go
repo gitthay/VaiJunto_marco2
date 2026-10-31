@@ -192,8 +192,8 @@ var (
 	ArquivoUsuarios  = "usuarios.json"
 )
 
-// ConfigurarInstancia define a identidade da empresa e isola os arquivos JSON em pasta própria
-// (se empresaID for vazio ou "default", mantém na raiz para compatibilidade com o Problema 1)
+// ConfigurarInstancia define a identidade da empresa e cria APENAS a pasta e os arquivos JSON
+// do servidor correspondente que está sendo iniciado nesta máquina.
 func ConfigurarInstancia(empresaID, servidorURL string) error {
 	if empresaID != "" {
 		EmpresaAtualID = empresaID
@@ -211,6 +211,15 @@ func ConfigurarInstancia(empresaID, servidorURL string) error {
 		ArquivoReservas = filepath.Join(pasta, "reservas.json")
 		ArquivoUsuarios = filepath.Join(pasta, "usuarios.json")
 		ArquivoLog = filepath.Join(pasta, "servidor.log")
+	}
+
+	// Garante que os 3 arquivos JSON desta instância existam imediatamente ao subir o servidor
+	for _, arq := range []string{ArquivoCaronas, ArquivoReservas, ArquivoUsuarios} {
+		if _, err := os.Stat(arq); os.IsNotExist(err) {
+			if err := os.WriteFile(arq, []byte("[]"), 0644); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
