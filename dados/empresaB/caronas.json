@@ -1,34 +1,21 @@
 [
   {
-    "id": "CAR-1793241282878820200",
-    "motorista_id": "gab",
-    "assentos_tot": 2,
+    "id": "CAR-SIM-EMP2-1793472722833235900",
+    "motorista_id": "motorista_sim_2@consorcio.com",
+    "assentos_tot": 10,
     "trechos": [
       {
-        "origem": "fsa",
-        "destino": "irece",
+        "origem": "Feira de Santana",
+        "destino": "Vitória da Conquista",
         "data_partida": {
-          "dia": 12,
-          "mes": 12,
-          "ano": 2025
+          "dia": 25,
+          "mes": 11,
+          "ano": 2026
         },
-        "horario_partida": "2025-12-12T15:00:00-03:00",
-        "horario_chegada": "2025-12-12T15:30:00-03:00",
-        "preco": 15,
-        "assentos_livres": 2
-      },
-      {
-        "origem": "irece",
-        "destino": "ilheus",
-        "data_partida": {
-          "dia": 12,
-          "mes": 12,
-          "ano": 2025
-        },
-        "horario_partida": "2025-12-12T15:30:00-03:00",
-        "horario_chegada": "2025-12-12T16:00:00-03:00",
-        "preco": 15,
-        "assentos_livres": 1
+        "horario_partida": "2026-11-25T10:00:00-03:00",
+        "horario_chegada": "2026-11-25T14:00:00-03:00",
+        "preco": 65,
+        "assentos_livres": 9
       }
     ],
     "ativa": true

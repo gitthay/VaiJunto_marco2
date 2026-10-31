@@ -1,11 +1,617 @@
-[2026-10-28 23:30:46] [HEARTBEAT] Servidor parceiro http://localhost:9083 ficou OFFLINE (timeout/falha detectada).
-[2026-10-28 23:30:58] [HEARTBEAT] Servidor parceiro http://localhost:9083 (empresaC) voltou a ficar ONLINE!
-[2026-10-28 23:32:19] [CONEXAO] Novo cliente conectado de: [::1]:50418
-[2026-10-28 23:33:27] [REQUISICAO] De: [::1]:50418 | Usuario: gab | Acao: AUTENTICAR | Payload: {"email":"gab","senha":"123","tipo":"MOTORISTA"}
-[2026-10-28 23:33:27] [RESPOSTA] Para: [::1]:50418 (Usuario: gab) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
-[2026-10-28 23:34:42] [REQUISICAO] De: [::1]:50418 | Usuario: gab | Acao: PUBLICAR_CARONA | Payload: {"id":"CAR-1793241282878820200","motorista_id":"gab","assentos_tot":2,"trechos":[{"origem":"fsa","destino":"irece","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T15:00:00-03:00","horario_chegada":"2025-12-12T15:30:00-03:00","preco":15,"assentos_livres":2},{"origem":"irece","destino":"ilheus","data_partida":{"dia":12,"mes":12,"ano":2025},"horario_partida":"2025-12-12T15:30:00-03:00","horario_chegada":"2025-12-12T16:00:00-03:00","preco":15,"assentos_livres":2}],"ativa":true}
-[2026-10-28 23:34:45] [REQUISICAO] De: [::1]:50418 | Usuario: gab | Acao: CONSULTAR_CARONAS | Payload: null
-[2026-10-28 23:36:47] [2PC PREPARE] Transação TX-empresaC-1793241407138189400 (Lamport=1702, Origem=empresaC) PREPARADA com sucesso.
-[2026-10-28 23:36:47] [2PC COMMIT] Transação TX-empresaC-1793241407138189400 CONFIRMADA definitivamente.
-[2026-10-28 23:44:14] [ERRO CONEXAO] Erro na leitura do cliente [::1]:50418: read tcp [::1]:8082->[::1]:50418: wsarecv: Foi forçado o cancelamento de uma conexão existente pelo host remoto.
-[2026-10-28 23:44:14] [DESCONEXAO] Sessão ativa do usuário gab liberada.
+[2026-10-31 18:52:02] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60360
+[2026-10-31 18:52:02] [REQUISICAO] De: 172.19.0.1:60360 | Usuario: motorista_sim_2@consorcio.com | Acao: AUTENTICAR | Payload: {"email":"motorista_sim_2@consorcio.com","senha":"123","tipo":"MOTORISTA"}
+[2026-10-31 18:52:02] [RESPOSTA] Para: 172.19.0.1:60360 (Usuario: motorista_sim_2@consorcio.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:02] [REQUISICAO] De: 172.19.0.1:60360 | Usuario: motorista_sim_2@consorcio.com | Acao: PUBLICAR_CARONA | Payload: {"id":"CAR-SIM-EMP2-1793472722833235900","motorista_id":"motorista_sim_2@consorcio.com","assentos_tot":10,"trechos":[{"origem":"Feira de Santana","destino":"Vitória da Conquista","data_partida":{"dia":25,"mes":11,"ano":2026},"horario_partida":"2026-11-25T10:00:00-03:00","horario_chegada":"2026-11-25T14:00:00-03:00","preco":65,"assentos_livres":10}],"ativa":true}
+[2026-10-31 18:52:02] [DESCONEXAO] Cliente 172.19.0.1:60360 desconectou normalmente.
+[2026-10-31 18:52:02] [DESCONEXAO] Sessão ativa do usuário motorista_sim_2@consorcio.com liberada.
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60370
+[2026-10-31 18:52:03] [REQUISICAO] De: 172.19.0.1:60370 | Usuario: sim_passageiro_20_92800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_20_92800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60378
+[2026-10-31 18:52:03] [REQUISICAO] De: 172.19.0.1:60378 | Usuario: sim_passageiro_23_90700@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_23_90700@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60386
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60394
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60400
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60402
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60408
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60420
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60424
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60434
+[2026-10-31 18:52:03] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60440
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60442
+[2026-10-31 18:52:04] [RESPOSTA] Para: 172.19.0.1:60370 (Usuario: sim_passageiro_20_92800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60448
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60456
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60460
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60470
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60472
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60488
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60494
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60508
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60514
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60518
+[2026-10-31 18:52:04] [REQUISICAO] De: 172.19.0.1:60386 | Usuario: sim_passageiro_59_28400@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_59_28400@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60534
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60542
+[2026-10-31 18:52:04] [REQUISICAO] De: 172.19.0.1:60394 | Usuario: sim_passageiro_5_90600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_5_90600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60548
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60550
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60566
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60572
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60574
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60586
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60588
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60592
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60594
+[2026-10-31 18:52:04] [REQUISICAO] De: 172.19.0.1:60400 | Usuario: sim_passageiro_11_35600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_11_35600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60610
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60618
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60626
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60634
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60638
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60642
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60656
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60668
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60680
+[2026-10-31 18:52:04] [RESPOSTA] Para: 172.19.0.1:60378 (Usuario: sim_passageiro_23_90700@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60688
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60704
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60712
+[2026-10-31 18:52:04] [REQUISICAO] De: 172.19.0.1:60402 | Usuario: sim_passageiro_146_35600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_146_35600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60724
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60734
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60744
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60748
+[2026-10-31 18:52:04] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60764
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60774
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60786
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60794
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60802
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60818
+[2026-10-31 18:52:05] [REQUISICAO] De: 172.19.0.1:60408 | Usuario: sim_passageiro_176_35600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_176_35600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60828
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60844
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60852
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60866
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60882
+[2026-10-31 18:52:05] [REQUISICAO] De: 172.19.0.1:60420 | Usuario: sim_passageiro_8_60100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_8_60100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60896
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60910
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60924
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60940
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60954
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60966
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60978
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60990
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:60996
+[2026-10-31 18:52:05] [REQUISICAO] De: 172.19.0.1:60424 | Usuario: sim_passageiro_179_3300@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_179_3300@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32780
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32796
+[2026-10-31 18:52:05] [REQUISICAO] De: 172.19.0.1:60434 | Usuario: sim_passageiro_32_3300@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_32_3300@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32800
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32806
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32810
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32820
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32828
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32844
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32848
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32864
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32874
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32882
+[2026-10-31 18:52:05] [REQUISICAO] De: 172.19.0.1:60440 | Usuario: sim_passageiro_77_21200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_77_21200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32890
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32904
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32908
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32922
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32932
+[2026-10-31 18:52:05] [REQUISICAO] De: 172.19.0.1:60442 | Usuario: sim_passageiro_62_17600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_62_17600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32934
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32948
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32960
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32974
+[2026-10-31 18:52:05] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32990
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60370 | Usuario: sim_passageiro_20_92800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32992
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60448 | Usuario: sim_passageiro_149_17600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_149_17600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:32998
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:33004
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:33020
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60456 | Usuario: sim_passageiro_86_17600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_86_17600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:33026
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:33030
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60460 | Usuario: sim_passageiro_35_17600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_35_17600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:33036
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:33040
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60470 | Usuario: sim_passageiro_152_21200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_152_21200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [CONEXAO] Novo cliente conectado de: 172.19.0.1:33054
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60472 | Usuario: sim_passageiro_26_10000@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_26_10000@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60488 | Usuario: sim_passageiro_65_10000@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_65_10000@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60494 | Usuario: sim_passageiro_74_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_74_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60508 | Usuario: sim_passageiro_89_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_89_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60514 | Usuario: sim_passageiro_29_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_29_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60518 | Usuario: sim_passageiro_17_10000@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_17_10000@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60534 | Usuario: sim_passageiro_101_22100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_101_22100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60542 | Usuario: sim_passageiro_107_22100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_107_22100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [RESPOSTA] Para: 172.19.0.1:60386 (Usuario: sim_passageiro_59_28400@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60548 | Usuario: sim_passageiro_68_30100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_68_30100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60550 | Usuario: sim_passageiro_14_22100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_14_22100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [RESPOSTA] Para: 172.19.0.1:60394 (Usuario: sim_passageiro_5_90600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60566 | Usuario: sim_passageiro_110_22100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_110_22100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60572 | Usuario: sim_passageiro_71_95500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_71_95500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60574 | Usuario: sim_passageiro_92_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_92_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [2PC PREPARE] Transação TX-empresaC-1793472723658265722 (Lamport=15462, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60586 | Usuario: sim_passageiro_38_95500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_38_95500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60588 | Usuario: sim_passageiro_113_47600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_113_47600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60592 | Usuario: sim_passageiro_122_47600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_122_47600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60594 | Usuario: sim_passageiro_119_45200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_119_45200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60610 | Usuario: sim_passageiro_41_11900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_41_11900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:06] [REQUISICAO] De: 172.19.0.1:60618 | Usuario: sim_passageiro_125_95500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_125_95500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60626 | Usuario: sim_passageiro_158_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_158_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60634 | Usuario: sim_passageiro_44_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_44_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60638 | Usuario: sim_passageiro_128_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_128_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60642 | Usuario: sim_passageiro_116_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_116_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60656 | Usuario: sim_passageiro_131_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_131_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60668 | Usuario: sim_passageiro_95_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_95_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60680 | Usuario: sim_passageiro_161_11900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_161_11900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60378 | Usuario: sim_passageiro_23_90700@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60688 | Usuario: sim_passageiro_155_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_155_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60704 | Usuario: sim_passageiro_80_45200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_80_45200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60712 | Usuario: sim_passageiro_98_45200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_98_45200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60724 | Usuario: sim_passageiro_164_45200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_164_45200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60734 | Usuario: sim_passageiro_134_47600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_134_47600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60744 | Usuario: sim_passageiro_47_11900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_47_11900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60748 | Usuario: sim_passageiro_137_47600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_137_47600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60764 | Usuario: sim_passageiro_167_45200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_167_45200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60774 | Usuario: sim_passageiro_182_47600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_182_47600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60786 | Usuario: sim_passageiro_50_61500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_50_61500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60794 | Usuario: sim_passageiro_170_47600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_170_47600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60802 | Usuario: sim_passageiro_185_47600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_185_47600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60818 | Usuario: sim_passageiro_2_10000@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_2_10000@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60828 | Usuario: sim_passageiro_215_500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_215_500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60844 | Usuario: sim_passageiro_143_500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_143_500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60852 | Usuario: sim_passageiro_140_500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_140_500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60866 | Usuario: sim_passageiro_173_500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_173_500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60882 | Usuario: sim_passageiro_53_96800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_53_96800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60896 | Usuario: sim_passageiro_83_34300@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_83_34300@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60910 | Usuario: sim_passageiro_56_34300@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_56_34300@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60924 | Usuario: sim_passageiro_269_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_269_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:07] [REQUISICAO] De: 172.19.0.1:60940 | Usuario: sim_passageiro_287_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_287_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:60954 | Usuario: sim_passageiro_281_22100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_281_22100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:60966 | Usuario: sim_passageiro_254_93100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_254_93100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:60978 | Usuario: sim_passageiro_299_22100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_299_22100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:60990 | Usuario: sim_passageiro_224_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_224_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:60996 | Usuario: sim_passageiro_278_12200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_278_12200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32780 | Usuario: sim_passageiro_275_3900@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_275_3900@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32796 | Usuario: sim_passageiro_191_17000@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_191_17000@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32800 | Usuario: sim_passageiro_206_32200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_206_32200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32806 | Usuario: sim_passageiro_260_27200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_260_27200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32810 | Usuario: sim_passageiro_236_32200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_236_32200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32820 | Usuario: sim_passageiro_239_27200@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_239_27200@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32828 | Usuario: sim_passageiro_251_96800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_251_96800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32844 | Usuario: sim_passageiro_263_96800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_263_96800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32848 | Usuario: sim_passageiro_284_96800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_284_96800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32864 | Usuario: sim_passageiro_242_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_242_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32874 | Usuario: sim_passageiro_209_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_209_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32882 | Usuario: sim_passageiro_104_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_104_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32890 | Usuario: sim_passageiro_212_96800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_212_96800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32904 | Usuario: sim_passageiro_257_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_257_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32908 | Usuario: sim_passageiro_266_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_266_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32922 | Usuario: sim_passageiro_290_96800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_290_96800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32932 | Usuario: sim_passageiro_293_96800@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_293_96800@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32934 | Usuario: sim_passageiro_296_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_296_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32948 | Usuario: sim_passageiro_218_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_218_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32960 | Usuario: sim_passageiro_194_55100@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_194_55100@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32974 | Usuario: sim_passageiro_197_40500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_197_40500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32990 | Usuario: sim_passageiro_221_40500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_221_40500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32992 | Usuario: sim_passageiro_272_24500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_272_24500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:32998 | Usuario: sim_passageiro_200_24500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_200_24500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:60370 | Usuario: sim_passageiro_20_92800@email.com | Acao: RESERVAR_TRECHO | Payload: {"trechos":[{"carona_id":"CAR-SIM-EMP1-1793472722744397000","motorista_id":"motorista_sim_1@consorcio.com","empresa_id":"empresaA","servidor_url":"http://empresaA:9081","origem":"Salvador","destino":"Feira de Santana","horario_partida":"2026-11-25T08:00:00-03:00","horario_chegada":"2026-11-25T10:00:00-03:00","preco":25,"assentos_livres":9},{"carona_id":"CAR-SIM-EMP2-1793472722833235900","motorista_id":"motorista_sim_2@consorcio.com","empresa_id":"empresaB","servidor_url":"http://empresaB:9082","origem":"Feira de Santana","destino":"Vitória da Conquista","horario_partida":"2026-11-25T10:00:00-03:00","horario_chegada":"2026-11-25T14:00:00-03:00","preco":65,"assentos_livres":9},{"carona_id":"CAR-SIM-EMP3-1793472722911643200","motorista_id":"motorista_sim_3@consorcio.com","empresa_id":"empresaC","servidor_url":"http://empresaC:9083","origem":"Vitória da Conquista","destino":"Montes Claros","horario_partida":"2026-11-25T14:00:00-03:00","horario_chegada":"2026-11-25T18:00:00-03:00","preco":90,"assentos_livres":10}],"preco_total":180}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:33004 | Usuario: sim_passageiro_227_24500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_227_24500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:33020 | Usuario: sim_passageiro_245_24500@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_245_24500@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:33026 | Usuario: sim_passageiro_230_95600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_230_95600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:08] [REQUISICAO] De: 172.19.0.1:33030 | Usuario: sim_passageiro_233_95600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_233_95600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:09] [REQUISICAO] De: 172.19.0.1:33036 | Usuario: sim_passageiro_248_68600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_248_68600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:09] [REQUISICAO] De: 172.19.0.1:33040 | Usuario: sim_passageiro_203_95600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_203_95600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:09] [REQUISICAO] De: 172.19.0.1:33054 | Usuario: sim_passageiro_188_68600@email.com | Acao: AUTENTICAR | Payload: {"email":"sim_passageiro_188_68600@email.com","senha":"123","tipo":"PASSAGEIRO"}
+[2026-10-31 18:52:09] [REQUISICAO] De: 172.19.0.1:60386 | Usuario: sim_passageiro_59_28400@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:09] [REQUISICAO] De: 172.19.0.1:60394 | Usuario: sim_passageiro_5_90600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60400 (Usuario: sim_passageiro_11_35600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60402 (Usuario: sim_passageiro_146_35600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60408 (Usuario: sim_passageiro_176_35600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60420 (Usuario: sim_passageiro_8_60100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60424 (Usuario: sim_passageiro_179_3300@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60434 (Usuario: sim_passageiro_32_3300@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60440 (Usuario: sim_passageiro_77_21200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60442 (Usuario: sim_passageiro_62_17600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60448 (Usuario: sim_passageiro_149_17600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60456 (Usuario: sim_passageiro_86_17600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60460 (Usuario: sim_passageiro_35_17600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60470 (Usuario: sim_passageiro_152_21200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60472 (Usuario: sim_passageiro_26_10000@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60488 (Usuario: sim_passageiro_65_10000@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60940 (Usuario: sim_passageiro_287_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60494 (Usuario: sim_passageiro_74_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60508 (Usuario: sim_passageiro_89_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60514 (Usuario: sim_passageiro_29_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60518 (Usuario: sim_passageiro_17_10000@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60534 (Usuario: sim_passageiro_101_22100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [DESCONEXAO] Cliente 172.19.0.1:60378 desconectou normalmente.
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60542 (Usuario: sim_passageiro_107_22100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60548 (Usuario: sim_passageiro_68_30100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60550 (Usuario: sim_passageiro_14_22100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60566 (Usuario: sim_passageiro_110_22100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60572 (Usuario: sim_passageiro_71_95500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60574 (Usuario: sim_passageiro_92_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [HEARTBEAT] Servidor parceiro http://empresaA:9081 (empresaA) voltou a ficar ONLINE!
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60586 (Usuario: sim_passageiro_38_95500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60588 (Usuario: sim_passageiro_113_47600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [RESPOSTA] Para: 172.19.0.1:60592 (Usuario: sim_passageiro_122_47600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:09] [REQUISICAO] De: 172.19.0.1:60400 | Usuario: sim_passageiro_11_35600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60402 | Usuario: sim_passageiro_146_35600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60408 | Usuario: sim_passageiro_176_35600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [RESPOSTA] Para: 172.19.0.1:60594 (Usuario: sim_passageiro_119_45200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60420 | Usuario: sim_passageiro_8_60100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60424 | Usuario: sim_passageiro_179_3300@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60434 | Usuario: sim_passageiro_32_3300@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [RESPOSTA] Para: 172.19.0.1:60610 (Usuario: sim_passageiro_41_11900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60440 | Usuario: sim_passageiro_77_21200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60442 | Usuario: sim_passageiro_62_17600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [RESPOSTA] Para: 172.19.0.1:60618 (Usuario: sim_passageiro_125_95500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60448 | Usuario: sim_passageiro_149_17600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60456 | Usuario: sim_passageiro_86_17600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [RESPOSTA] Para: 172.19.0.1:60626 (Usuario: sim_passageiro_158_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60460 | Usuario: sim_passageiro_35_17600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60470 | Usuario: sim_passageiro_152_21200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60472 | Usuario: sim_passageiro_26_10000@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [RESPOSTA] Para: 172.19.0.1:60634 (Usuario: sim_passageiro_44_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60488 | Usuario: sim_passageiro_65_10000@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60940 | Usuario: sim_passageiro_287_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [RESPOSTA] Para: 172.19.0.1:60638 (Usuario: sim_passageiro_128_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60494 | Usuario: sim_passageiro_74_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60508 | Usuario: sim_passageiro_89_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60514 | Usuario: sim_passageiro_29_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [RESPOSTA] Para: 172.19.0.1:60642 (Usuario: sim_passageiro_116_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60518 | Usuario: sim_passageiro_17_10000@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:10] [REQUISICAO] De: 172.19.0.1:60534 | Usuario: sim_passageiro_101_22100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_23_90700@email.com liberada.
+[2026-10-31 18:52:11] [RESPOSTA] Para: 172.19.0.1:60656 (Usuario: sim_passageiro_131_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60542 | Usuario: sim_passageiro_107_22100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60548 | Usuario: sim_passageiro_68_30100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60550 | Usuario: sim_passageiro_14_22100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [RESPOSTA] Para: 172.19.0.1:60668 (Usuario: sim_passageiro_95_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60566 | Usuario: sim_passageiro_110_22100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60572 | Usuario: sim_passageiro_71_95500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [RESPOSTA] Para: 172.19.0.1:60680 (Usuario: sim_passageiro_161_11900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60574 | Usuario: sim_passageiro_92_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [HEARTBEAT] Servidor parceiro http://empresaC:9083 (empresaC) voltou a ficar ONLINE!
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60586 | Usuario: sim_passageiro_38_95500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [RESPOSTA] Para: 172.19.0.1:60688 (Usuario: sim_passageiro_155_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60588 | Usuario: sim_passageiro_113_47600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60592 | Usuario: sim_passageiro_122_47600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [RESPOSTA] Para: 172.19.0.1:60704 (Usuario: sim_passageiro_80_45200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:11] [RESPOSTA] Para: 172.19.0.1:60712 (Usuario: sim_passageiro_98_45200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:11] [REQUISICAO] De: 172.19.0.1:60594 | Usuario: sim_passageiro_119_45200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:11] [RESPOSTA] Para: 172.19.0.1:60724 (Usuario: sim_passageiro_164_45200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [REQUISICAO] De: 172.19.0.1:60610 | Usuario: sim_passageiro_41_11900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60734 (Usuario: sim_passageiro_134_47600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60744 (Usuario: sim_passageiro_47_11900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [REQUISICAO] De: 172.19.0.1:60618 | Usuario: sim_passageiro_125_95500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60748 (Usuario: sim_passageiro_137_47600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [REQUISICAO] De: 172.19.0.1:60626 | Usuario: sim_passageiro_158_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60764 (Usuario: sim_passageiro_167_45200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [REQUISICAO] De: 172.19.0.1:60634 | Usuario: sim_passageiro_44_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60774 (Usuario: sim_passageiro_182_47600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [REQUISICAO] De: 172.19.0.1:60638 | Usuario: sim_passageiro_128_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60786 (Usuario: sim_passageiro_50_61500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60794 (Usuario: sim_passageiro_170_47600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [REQUISICAO] De: 172.19.0.1:60642 | Usuario: sim_passageiro_116_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:12] [RESPOSTA] Para: 172.19.0.1:60802 (Usuario: sim_passageiro_185_47600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:12] [REQUISICAO] De: 172.19.0.1:60656 | Usuario: sim_passageiro_131_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:13] [RESPOSTA] Para: 172.19.0.1:60818 (Usuario: sim_passageiro_2_10000@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:13] [RESPOSTA] Para: 172.19.0.1:60828 (Usuario: sim_passageiro_215_500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:13] [REQUISICAO] De: 172.19.0.1:60668 | Usuario: sim_passageiro_95_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:13] [RESPOSTA] Para: 172.19.0.1:60844 (Usuario: sim_passageiro_143_500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:13] [RESPOSTA] Para: 172.19.0.1:60852 (Usuario: sim_passageiro_140_500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:13] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_20_92800@email.com liberada.
+[2026-10-31 18:52:13] [REQUISICAO] De: 172.19.0.1:60680 | Usuario: sim_passageiro_161_11900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:13] [DESCONEXAO] Cliente 172.19.0.1:60394 desconectou normalmente.
+[2026-10-31 18:52:13] [DESCONEXAO] Cliente 172.19.0.1:60386 desconectou normalmente.
+[2026-10-31 18:52:13] [RESPOSTA] Para: 172.19.0.1:60866 (Usuario: sim_passageiro_173_500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60688 | Usuario: sim_passageiro_155_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [RESPOSTA] Para: 172.19.0.1:60882 (Usuario: sim_passageiro_53_96800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [RESPOSTA] Para: 172.19.0.1:60896 (Usuario: sim_passageiro_83_34300@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60704 | Usuario: sim_passageiro_80_45200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60712 | Usuario: sim_passageiro_98_45200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [RESPOSTA] Para: 172.19.0.1:60910 (Usuario: sim_passageiro_56_34300@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60724 | Usuario: sim_passageiro_164_45200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60734 | Usuario: sim_passageiro_134_47600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [RESPOSTA] Para: 172.19.0.1:60924 (Usuario: sim_passageiro_269_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60744 | Usuario: sim_passageiro_47_11900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60748 | Usuario: sim_passageiro_137_47600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [RESPOSTA] Para: 172.19.0.1:60954 (Usuario: sim_passageiro_281_22100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60764 | Usuario: sim_passageiro_167_45200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [RESPOSTA] Para: 172.19.0.1:60966 (Usuario: sim_passageiro_254_93100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60774 | Usuario: sim_passageiro_182_47600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:14] [RESPOSTA] Para: 172.19.0.1:60978 (Usuario: sim_passageiro_299_22100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:14] [REQUISICAO] De: 172.19.0.1:60786 | Usuario: sim_passageiro_50_61500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60456 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60472 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60470 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60434 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60460 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60408 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60400 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60940 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60572 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60488 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60548 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60442 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60534 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60440 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60514 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60518 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60494 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60448 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60424 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60542 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60566 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60420 desconectou normalmente.
+[2026-10-31 18:52:15] [REQUISICAO] De: 172.19.0.1:60794 | Usuario: sim_passageiro_170_47600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60508 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60402 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60550 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60574 desconectou normalmente.
+[2026-10-31 18:52:15] [DESCONEXAO] Cliente 172.19.0.1:60586 desconectou normalmente.
+[2026-10-31 18:52:15] [RESPOSTA] Para: 172.19.0.1:60990 (Usuario: sim_passageiro_224_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60802 | Usuario: sim_passageiro_185_47600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60588 desconectou normalmente.
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60592 desconectou normalmente.
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60818 | Usuario: sim_passageiro_2_10000@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [RESPOSTA] Para: 172.19.0.1:60996 (Usuario: sim_passageiro_278_12200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60828 | Usuario: sim_passageiro_215_500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60594 desconectou normalmente.
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60844 | Usuario: sim_passageiro_143_500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60610 desconectou normalmente.
+[2026-10-31 18:52:16] [RESPOSTA] Para: 172.19.0.1:32780 (Usuario: sim_passageiro_275_3900@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60852 | Usuario: sim_passageiro_140_500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [RESPOSTA] Para: 172.19.0.1:32796 (Usuario: sim_passageiro_191_17000@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60618 desconectou normalmente.
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60626 desconectou normalmente.
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60634 desconectou normalmente.
+[2026-10-31 18:52:16] [RESPOSTA] Para: 172.19.0.1:32800 (Usuario: sim_passageiro_206_32200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60638 desconectou normalmente.
+[2026-10-31 18:52:16] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_5_90600@email.com liberada.
+[2026-10-31 18:52:16] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_59_28400@email.com liberada.
+[2026-10-31 18:52:16] [RESPOSTA] Para: 172.19.0.1:32806 (Usuario: sim_passageiro_260_27200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60866 | Usuario: sim_passageiro_173_500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60642 desconectou normalmente.
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60882 | Usuario: sim_passageiro_53_96800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [RESPOSTA] Para: 172.19.0.1:32810 (Usuario: sim_passageiro_236_32200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:16] [REQUISICAO] De: 172.19.0.1:60896 | Usuario: sim_passageiro_83_34300@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:16] [DESCONEXAO] Cliente 172.19.0.1:60656 desconectou normalmente.
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32820 (Usuario: sim_passageiro_239_27200@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [REQUISICAO] De: 172.19.0.1:60910 | Usuario: sim_passageiro_56_34300@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32828 (Usuario: sim_passageiro_251_96800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [REQUISICAO] De: 172.19.0.1:60924 | Usuario: sim_passageiro_269_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:17] [DESCONEXAO] Cliente 172.19.0.1:60668 desconectou normalmente.
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32844 (Usuario: sim_passageiro_263_96800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [REQUISICAO] De: 172.19.0.1:60954 | Usuario: sim_passageiro_281_22100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32848 (Usuario: sim_passageiro_284_96800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [REQUISICAO] De: 172.19.0.1:60966 | Usuario: sim_passageiro_254_93100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32864 (Usuario: sim_passageiro_242_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [REQUISICAO] De: 172.19.0.1:60978 | Usuario: sim_passageiro_299_22100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_86_17600@email.com liberada.
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32874 (Usuario: sim_passageiro_209_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_26_10000@email.com liberada.
+[2026-10-31 18:52:17] [DESCONEXAO] Cliente 172.19.0.1:60680 desconectou normalmente.
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_152_21200@email.com liberada.
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_32_3300@email.com liberada.
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32882 (Usuario: sim_passageiro_104_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_35_17600@email.com liberada.
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_176_35600@email.com liberada.
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_11_35600@email.com liberada.
+[2026-10-31 18:52:17] [RESPOSTA] Para: 172.19.0.1:32890 (Usuario: sim_passageiro_212_96800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_287_12200@email.com liberada.
+[2026-10-31 18:52:17] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_71_95500@email.com liberada.
+[2026-10-31 18:52:18] [RESPOSTA] Para: 172.19.0.1:32904 (Usuario: sim_passageiro_257_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_65_10000@email.com liberada.
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_68_30100@email.com liberada.
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_62_17600@email.com liberada.
+[2026-10-31 18:52:18] [RESPOSTA] Para: 172.19.0.1:32908 (Usuario: sim_passageiro_266_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_101_22100@email.com liberada.
+[2026-10-31 18:52:18] [DESCONEXAO] Cliente 172.19.0.1:60688 desconectou normalmente.
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_77_21200@email.com liberada.
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_29_12200@email.com liberada.
+[2026-10-31 18:52:18] [RESPOSTA] Para: 172.19.0.1:32922 (Usuario: sim_passageiro_290_96800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_17_10000@email.com liberada.
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_74_12200@email.com liberada.
+[2026-10-31 18:52:18] [DESCONEXAO] Cliente 172.19.0.1:60704 desconectou normalmente.
+[2026-10-31 18:52:18] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_149_17600@email.com liberada.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32932 (Usuario: sim_passageiro_293_96800@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_179_3300@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60712 desconectou normalmente.
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_107_22100@email.com liberada.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32934 (Usuario: sim_passageiro_296_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_110_22100@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60724 desconectou normalmente.
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_8_60100@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60734 desconectou normalmente.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32948 (Usuario: sim_passageiro_218_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_89_12200@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_146_35600@email.com liberada.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32960 (Usuario: sim_passageiro_194_55100@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_14_22100@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60744 desconectou normalmente.
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_92_12200@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60748 desconectou normalmente.
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_38_95500@email.com liberada.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32974 (Usuario: sim_passageiro_197_40500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [REQUISICAO] De: 172.19.0.1:60990 | Usuario: sim_passageiro_224_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_113_47600@email.com liberada.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32990 (Usuario: sim_passageiro_221_40500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_122_47600@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60764 desconectou normalmente.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32992 (Usuario: sim_passageiro_272_24500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [REQUISICAO] De: 172.19.0.1:60996 | Usuario: sim_passageiro_278_12200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60774 desconectou normalmente.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:32998 (Usuario: sim_passageiro_200_24500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [DESCONEXAO] Cliente 172.19.0.1:60786 desconectou normalmente.
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_119_45200@email.com liberada.
+[2026-10-31 18:52:19] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_41_11900@email.com liberada.
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:33004 (Usuario: sim_passageiro_227_24500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:19] [REQUISICAO] De: 172.19.0.1:32780 | Usuario: sim_passageiro_275_3900@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:19] [REQUISICAO] De: 172.19.0.1:32796 | Usuario: sim_passageiro_191_17000@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:19] [RESPOSTA] Para: 172.19.0.1:33020 (Usuario: sim_passageiro_245_24500@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_125_95500@email.com liberada.
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_158_3900@email.com liberada.
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_44_3900@email.com liberada.
+[2026-10-31 18:52:20] [RESPOSTA] Para: 172.19.0.1:33026 (Usuario: sim_passageiro_230_95600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32800 | Usuario: sim_passageiro_206_32200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_128_3900@email.com liberada.
+[2026-10-31 18:52:20] [RESPOSTA] Para: 172.19.0.1:33030 (Usuario: sim_passageiro_233_95600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32806 | Usuario: sim_passageiro_260_27200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [RESPOSTA] Para: 172.19.0.1:33036 (Usuario: sim_passageiro_248_68600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_116_3900@email.com liberada.
+[2026-10-31 18:52:20] [RESPOSTA] Para: 172.19.0.1:33040 (Usuario: sim_passageiro_203_95600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32810 | Usuario: sim_passageiro_236_32200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [RESPOSTA] Para: 172.19.0.1:33054 (Usuario: sim_passageiro_188_68600@email.com) | Acao: AUTENTICAR | Sucesso: true | Msg: Usuário cadastrado e autenticado com sucesso! | Payload: 
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_131_3900@email.com liberada.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32820 | Usuario: sim_passageiro_239_27200@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32828 | Usuario: sim_passageiro_251_96800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60794 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_95_3900@email.com liberada.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32844 | Usuario: sim_passageiro_263_96800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32848 | Usuario: sim_passageiro_284_96800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32864 | Usuario: sim_passageiro_242_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60802 desconectou normalmente.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32874 | Usuario: sim_passageiro_209_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_161_11900@email.com liberada.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60818 desconectou normalmente.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32882 | Usuario: sim_passageiro_104_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60828 desconectou normalmente.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32890 | Usuario: sim_passageiro_212_96800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60844 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60852 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60866 desconectou normalmente.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32904 | Usuario: sim_passageiro_257_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60882 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60896 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60910 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60924 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60954 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60966 desconectou normalmente.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32908 | Usuario: sim_passageiro_266_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Cliente 172.19.0.1:60978 desconectou normalmente.
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_155_3900@email.com liberada.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32922 | Usuario: sim_passageiro_290_96800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_80_45200@email.com liberada.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32932 | Usuario: sim_passageiro_293_96800@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_98_45200@email.com liberada.
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32934 | Usuario: sim_passageiro_296_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_164_45200@email.com liberada.
+[2026-10-31 18:52:20] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_134_47600@email.com liberada.
+[2026-10-31 18:52:20] [RECOVERY 2PC] Coordenador http://empresaC:9083 inacessível após timeout. Liberando assentos da transação TX-empresaC-1793472723658265722 (Presumed Abort).
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32948 | Usuario: sim_passageiro_218_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:20] [REQUISICAO] De: 172.19.0.1:32960 | Usuario: sim_passageiro_194_55100@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_47_11900@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_137_47600@email.com liberada.
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:32974 | Usuario: sim_passageiro_197_40500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:32990 | Usuario: sim_passageiro_221_40500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_167_45200@email.com liberada.
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:32992 | Usuario: sim_passageiro_272_24500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_182_47600@email.com liberada.
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:32998 | Usuario: sim_passageiro_200_24500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_50_61500@email.com liberada.
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:33004 | Usuario: sim_passageiro_227_24500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:33020 | Usuario: sim_passageiro_245_24500@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:33026 | Usuario: sim_passageiro_230_95600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:33030 | Usuario: sim_passageiro_233_95600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:33036 | Usuario: sim_passageiro_248_68600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:33040 | Usuario: sim_passageiro_203_95600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [REQUISICAO] De: 172.19.0.1:33054 | Usuario: sim_passageiro_188_68600@email.com | Acao: BUSCAR_ITINERARIO | Payload: {"data":{"dia":25,"mes":11,"ano":2026},"destino":"Montes Claros","origem":"Salvador"}
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_170_47600@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_185_47600@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_2_10000@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_215_500@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_143_500@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_140_500@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_173_500@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_53_96800@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_83_34300@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_56_34300@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_269_12200@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_281_22100@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_254_93100@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_299_22100@email.com liberada.
+[2026-10-31 18:52:21] [DESCONEXAO] Cliente 172.19.0.1:60990 desconectou normalmente.
+[2026-10-31 18:52:21] [2PC ABORT] Transação TX-empresaC-1793472723658265722 ABORTADA e assentos liberados.
+[2026-10-31 18:52:21] [DESCONEXAO] Cliente 172.19.0.1:60996 desconectou normalmente.
+[2026-10-31 18:52:21] [DESCONEXAO] Cliente 172.19.0.1:32780 desconectou normalmente.
+[2026-10-31 18:52:21] [DESCONEXAO] Cliente 172.19.0.1:32796 desconectou normalmente.
+[2026-10-31 18:52:21] [DESCONEXAO] Cliente 172.19.0.1:32800 desconectou normalmente.
+[2026-10-31 18:52:21] [DESCONEXAO] Cliente 172.19.0.1:32806 desconectou normalmente.
+[2026-10-31 18:52:21] [RECOVERY 2PC] Coordenador http://empresaC:9083 inacessível após timeout. Liberando assentos da transação TX-empresaC-1793472723658265722 (Presumed Abort).
+[2026-10-31 18:52:22] [RECOVERY 2PC] Coordenador http://empresaC:9083 inacessível após timeout. Liberando assentos da transação TX-empresaC-1793472723658265722 (Presumed Abort).
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32810 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32820 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32828 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32844 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32848 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32864 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_224_12200@email.com liberada.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32874 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_278_12200@email.com liberada.
+[2026-10-31 18:52:22] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_275_3900@email.com liberada.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32882 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_191_17000@email.com liberada.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32890 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_206_32200@email.com liberada.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32904 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_260_27200@email.com liberada.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32908 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32922 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32932 desconectou normalmente.
+[2026-10-31 18:52:22] [DESCONEXAO] Cliente 172.19.0.1:32934 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_236_32200@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_239_27200@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:32948 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_251_96800@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:32960 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:32974 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:32990 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_263_96800@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:32992 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:32998 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_284_96800@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:33004 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:33020 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_242_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:33026 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:33030 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:33036 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:33040 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Cliente 172.19.0.1:33054 desconectou normalmente.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_209_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_104_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_212_96800@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_257_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_266_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_290_96800@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_293_96800@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_296_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_218_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_194_55100@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_197_40500@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_221_40500@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_272_24500@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_200_24500@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_227_24500@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_245_24500@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_230_95600@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_233_95600@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_248_68600@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_203_95600@email.com liberada.
+[2026-10-31 18:52:23] [DESCONEXAO] Sessão ativa do usuário sim_passageiro_188_68600@email.com liberada.
+[2026-10-31 18:52:24] [HEARTBEAT] Servidor parceiro http://empresaA:9081 (empresaA) voltou a ficar ONLINE!
+[2026-10-31 18:52:24] [HEARTBEAT] Servidor parceiro http://empresaC:9083 (empresaC) voltou a ficar ONLINE!
+[2026-10-31 18:52:25] [2PC PREPARE] Transação TX-empresaC-1793472743504464923 (Lamport=15496, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-31 18:52:25] [2PC COMMIT] Transação TX-empresaC-1793472743504464923 CONFIRMADA definitivamente.

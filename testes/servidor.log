@@ -107,3 +107,25 @@
 [2026-10-29 00:14:57] [PRECEDENCIA LAMPORT] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Emp=empresaB) venceu disputa contra TX-EMP-C-LENTA (Lamport=50, Emp=empresaC)
 [2026-10-29 00:14:57] [2PC PREPARE] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Origem=empresaB) PREPARADA com sucesso.
 [2026-10-29 00:14:57] [2PC COMMIT] Transação TX-EMP-B-PRIORITARIA CONFIRMADA definitivamente.
+[2026-10-31 15:11:02] [2PC PREPARE] Transação TX-empresaA-1793470262830888100 (Lamport=2, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-31 15:11:02] [2PC COMMIT] Transação TX-empresaA-1793470262830888100 CONFIRMADA definitivamente.
+[2026-10-31 15:11:02] [2PC PREPARE] Transação TX-empresaA-1793470262882838000 (Lamport=45, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-31 15:11:02] [2PC ABORT] Transação TX-empresaA-1793470262882838000 ABORTADA e assentos liberados.
+[2026-10-31 15:11:02] [2PC PREPARE] Transação TX-ORFA-999 (Lamport=500, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-31 15:11:02] [RECOVERY 2PC] Coordenador informou ABORT para transação TX-ORFA-999. Liberando assentos.
+[2026-10-31 15:11:02] [2PC ABORT] Transação TX-ORFA-999 ABORTADA e assentos liberados.
+[2026-10-31 15:11:02] [2PC PREPARE] Transação TX-EMP-C-LENTA (Lamport=50, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-31 15:11:02] [PRECEDENCIA LAMPORT] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Emp=empresaB) venceu disputa contra TX-EMP-C-LENTA (Lamport=50, Emp=empresaC)
+[2026-10-31 15:11:02] [2PC PREPARE] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Origem=empresaB) PREPARADA com sucesso.
+[2026-10-31 15:11:02] [2PC COMMIT] Transação TX-EMP-B-PRIORITARIA CONFIRMADA definitivamente.
+[2026-10-31 15:12:15] [2PC PREPARE] Transação TX-empresaA-1793470335238746300 (Lamport=2, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-31 15:12:15] [2PC COMMIT] Transação TX-empresaA-1793470335238746300 CONFIRMADA definitivamente.
+[2026-10-31 15:12:15] [2PC PREPARE] Transação TX-empresaA-1793470335286014500 (Lamport=45, Origem=empresaA) PREPARADA com sucesso.
+[2026-10-31 15:12:15] [2PC ABORT] Transação TX-empresaA-1793470335286014500 ABORTADA e assentos liberados.
+[2026-10-31 15:12:15] [2PC PREPARE] Transação TX-ORFA-999 (Lamport=500, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-31 15:12:15] [RECOVERY 2PC] Coordenador informou ABORT para transação TX-ORFA-999. Liberando assentos.
+[2026-10-31 15:12:15] [2PC ABORT] Transação TX-ORFA-999 ABORTADA e assentos liberados.
+[2026-10-31 15:12:15] [2PC PREPARE] Transação TX-EMP-C-LENTA (Lamport=50, Origem=empresaC) PREPARADA com sucesso.
+[2026-10-31 15:12:15] [PRECEDENCIA LAMPORT] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Emp=empresaB) venceu disputa contra TX-EMP-C-LENTA (Lamport=50, Emp=empresaC)
+[2026-10-31 15:12:15] [2PC PREPARE] Transação TX-EMP-B-PRIORITARIA (Lamport=10, Origem=empresaB) PREPARADA com sucesso.
+[2026-10-31 15:12:15] [2PC COMMIT] Transação TX-EMP-B-PRIORITARIA CONFIRMADA definitivamente.

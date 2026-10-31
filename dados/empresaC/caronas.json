@@ -1,0 +1,23 @@
+[
+  {
+    "id": "CAR-SIM-EMP3-1793472722911643200",
+    "motorista_id": "motorista_sim_3@consorcio.com",
+    "assentos_tot": 10,
+    "trechos": [
+      {
+        "origem": "Vitória da Conquista",
+        "destino": "Montes Claros",
+        "data_partida": {
+          "dia": 25,
+          "mes": 11,
+          "ano": 2026
+        },
+        "horario_partida": "2026-11-25T14:00:00-03:00",
+        "horario_chegada": "2026-11-25T18:00:00-03:00",
+        "preco": 90,
+        "assentos_livres": 9
+      }
+    ],
+    "ativa": true
+  }
+]

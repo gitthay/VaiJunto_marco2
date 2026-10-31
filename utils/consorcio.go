@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// PeerStatus guarda o estado de conectividade (Heartbeat) de outro servidor do consórcio
+// PeerStatus representa o estado de conectividade de outro servidor do consórcio
 type PeerStatus struct {
 	URL        string    `json:"url"`
 	EmpresaID  string    `json:"empresa_id"`
@@ -22,23 +22,17 @@ type PeerStatus struct {
 }
 
 var (
-	PeersConsorcio = make(map[string]*PeerStatus)
-	muPeers        sync.RWMutex
-
-	// Relógio Lógico de Lamport para ordenação/precedência distribuída sem relógios sincronizados
-	relogioLamport   uint64
-	muLamport        sync.Mutex
-	muCoordenador2PC sync.Mutex
-
-	clienteHTTP = &http.Client{
-		Timeout: 2500 * time.Millisecond,
-	}
-	clienteHeartbeat = &http.Client{
-		Timeout: 1200 * time.Millisecond,
-	}
+	PeersConsorcio    = make(map[string]*PeerStatus)
+	muPeers           sync.RWMutex
+	relogioLamport    uint64 = 1
+	muLamport         sync.Mutex
+	muCoordenador2PC  sync.Mutex
+	transacoesMemoria []Transacao2PC // Mantém os bloqueios temporários de 2PC exclusivamente em RAM (sem arquivo extra)
+	clienteHTTP       = &http.Client{Timeout: 2500 * time.Millisecond}
+	clienteHeartbeat  = &http.Client{Timeout: 1200 * time.Millisecond}
 )
 
-// IncrementarLamport avança o relógio lógico em um evento local/envio de mensagem
+// IncrementarLamport avança o relógio lógico local em um evento interno ou envio de mensagem
 func IncrementarLamport() uint64 {
 	muLamport.Lock()
 	defer muLamport.Unlock()
@@ -69,6 +63,22 @@ func CompararPrecedencia(lamportA uint64, empA, txA string, lamportB uint64, emp
 	return txA < txB
 }
 
+// marcarReservaAbortadaEmMemoria atualiza o registro em memória quando uma reserva é cancelada
+func marcarReservaAbortadaEmMemoria(reservaID string) {
+	for i := range transacoesMemoria {
+		if strings.TrimSpace(transacoesMemoria[i].ReservaID) == strings.TrimSpace(reservaID) {
+			transacoesMemoria[i].Estado = EstadoAborted
+		}
+	}
+}
+
+// LimparEstado2PCMemoria reinicia a tabela de transações 2PC em memória (útil para isolamento entre testes)
+func LimparEstado2PCMemoria() {
+	mu.Lock()
+	defer mu.Unlock()
+	transacoesMemoria = nil
+}
+
 // ConfigurarPeers registra as URLs dos servidores parceiros do consórcio
 func ConfigurarPeers(listaPeers string) {
 	muPeers.Lock()
@@ -96,7 +106,7 @@ func ConfigurarPeers(listaPeers string) {
 func IniciarConsorcio(enderecoHTTP string, listaPeers string) {
 	ConfigurarPeers(listaPeers)
 
-	// Antes de aceitar novas operações, recupera eventuais transações pendentes após queda
+	// Antes de aceitar novas operações, recupera eventuais transações pendentes
 	go RecuperarTransacoesPendentes()
 
 	// Rotina de Batimento Cardíaco (Heartbeat) e Expiração de PREPARED órfãos
@@ -115,6 +125,7 @@ func ConfigurarRotasConsorcio() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/heartbeat", handlerHeartbeat)
 	mux.HandleFunc("/api/caronas", handlerListarCaronasConsorcio)
+	mux.HandleFunc("/api/caronas/passageiros", handlerConsultarPassageirosCaronaRemota)
 	mux.HandleFunc("/api/2pc/prepare", handler2PCPrepare)
 	mux.HandleFunc("/api/2pc/commit", handler2PCCommit)
 	mux.HandleFunc("/api/2pc/abort", handler2PCAbort)
@@ -189,6 +200,7 @@ func verificarPeersHeartbeat() {
 				if estavaOffline {
 					RegistrarLog("[HEARTBEAT] Servidor parceiro %s (%s) voltou a ficar ONLINE!", urlPeer, empID)
 					go RecuperarTransacoesPendentes()
+					go sincronizarCaronasInativasComPeer(urlPeer)
 				}
 			} else if !estavaOffline {
 				RegistrarLog("[HEARTBEAT] Servidor parceiro %s ficou OFFLINE (timeout/falha detectada).", urlPeer)
@@ -246,11 +258,11 @@ func handlerListarCaronasConsorcio(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(arestasDisponiveis)
 }
 
-// BuscarItinerariosConsorcio consulta as caronas locais e todos os servidores parceiros ONLINE
+// BuscarItinerariosConsorcio consulta as caronas locais e todos os servidores parceiros ONLINE via REST
 func BuscarItinerariosConsorcio(caronasLocais []Carona, origem, destino string, data Data) []Itinerario {
 	grafo := MontarGrafo(caronasLocais, data)
 
-	// Consulta cada servidor parceiro que está ativo (ou tenta rapidamente)
+	// Consulta cada servidor parceiro via HTTP GET /api/caronas
 	muPeers.RLock()
 	urls := make([]string, 0, len(PeersConsorcio))
 	for u := range PeersConsorcio {
@@ -371,7 +383,7 @@ func buscarItinerariosNoGrafo(grafo GrafoCidades, origem, destino string) []Itin
 }
 
 // ============================================================================
-// 3. TWO-PHASE COMMIT (2PC) COM PRECEDÊNCIA DE LAMPORT
+// 3. TWO-PHASE COMMIT (2PC) COM PRECEDÊNCIA DE LAMPORT (100% VIA REQUISIÇÕES E RAM)
 // ============================================================================
 
 type Requisicao2PCPrepare struct {
@@ -385,10 +397,10 @@ type Requisicao2PCPrepare struct {
 }
 
 type Resposta2PC struct {
-	Sucesso     bool            `json:"sucesso"`
-	Estado      EstadoTransacao `json:"estado"`
-	Mensagem    string          `json:"mensagem"`
-	Lamport     uint64          `json:"lamport"`
+	Sucesso  bool            `json:"sucesso"`
+	Estado   EstadoTransacao `json:"estado"`
+	Mensagem string          `json:"mensagem"`
+	Lamport  uint64          `json:"lamport"`
 }
 
 type Requisicao2PCDecisao struct {
@@ -401,16 +413,15 @@ const TimeoutLock2PC = 6 * time.Second
 
 // ExecutarPrepareLocal valida e bloqueia provisoriamente os assentos locais (Fase 1 do 2PC)
 // Se o último assento estiver bloqueado em PREPARED por outra transação de MENOR prioridade
-// segundo o Relógio Lógico de Lamport, preempciona a transação concorrente (resolução de conflitos).
+// segundo o Relógio Lógico de Lamport, preempciona a transação concorrente em memória.
 func ExecutarPrepareLocal(req Requisicao2PCPrepare) (bool, string) {
 	AtualizarLamport(req.TimestampLamport)
 
 	mu.Lock()
 	defer mu.Unlock()
 
-	transacoes, _ := CarregarTransacoesGerais()
-	// Idempotência: se já está PREPARED ou COMMITTED para esta mesma transação, retorna sucesso
-	for _, tx := range transacoes {
+	// Idempotência: verifica na tabela em memória
+	for _, tx := range transacoesMemoria {
 		if tx.TransacaoID == req.TransacaoID {
 			if tx.Estado == EstadoPrepared || tx.Estado == EstadoCommitted {
 				return true, "Transação já preparada/confirmada anteriormente."
@@ -439,10 +450,10 @@ func ExecutarPrepareLocal(req Requisicao2PCPrepare) (bool, string) {
 
 				for _, idx := range indices {
 					if caronas[idxC].Trechos[idx].AssentosLivre <= 0 {
-						// Critério de Precedência (Item 3 do PDF):
-						// Verifica se existe alguma transação ainda em estado PREPARED segurando assento neste trecho
-						// que tenha MENOR prioridade (maior Timestamp de Lamport) do que a requisição atual!
-						preemptou := tentarPreempcaoPorPrecedencia(&caronas, &transacoes, c.ID, idx, req)
+						// Critério de Precedência (Relógio Lógico de Lamport):
+						// Verifica em memória se alguma transação ainda em PREPARED segurando assento neste trecho
+						// tem MENOR prioridade (maior Timestamp de Lamport) do que a requisição atual!
+						preemptou := tentarPreempcaoPorPrecedencia(&caronas, &transacoesMemoria, c.ID, idx, req)
 						if !preemptou {
 							return false, fmt.Sprintf("o trecho de %s para %s não possui mais assentos disponíveis", trechoDesejado.Origem, trechoDesejado.Destino)
 						}
@@ -472,8 +483,8 @@ func ExecutarPrepareLocal(req Requisicao2PCPrepare) (bool, string) {
 		return false, "erro ao gravar bloqueio de assentos"
 	}
 
-	// Registra no transacoesgerais.json apenas os IDs essenciais e as referências locais (sem copiar caronas de outros servidores)
-	novaTx := TransacaoGeral{
+	// Mantém o estado PREPARED apenas em memória (RAM) durante a votação do 2PC
+	novaTx := Transacao2PC{
 		TransacaoID:      req.TransacaoID,
 		ReservaID:        req.ReservaID,
 		PassageiroID:     req.PassageiroID,
@@ -485,8 +496,7 @@ func ExecutarPrepareLocal(req Requisicao2PCPrepare) (bool, string) {
 		CriadoEm:         time.Now(),
 		ExpiraEm:         time.Now().Add(TimeoutLock2PC),
 	}
-	transacoes = append(transacoes, novaTx)
-	_ = SalvarTransacoesGerais(transacoes)
+	transacoesMemoria = append(transacoesMemoria, novaTx)
 
 	RegistrarLog("[2PC PREPARE] Transação %s (Lamport=%d, Origem=%s) PREPARADA com sucesso.",
 		req.TransacaoID, req.TimestampLamport, req.EmpresaOrigemID)
@@ -495,14 +505,13 @@ func ExecutarPrepareLocal(req Requisicao2PCPrepare) (bool, string) {
 
 // tentarPreempcaoPorPrecedencia aplica o critério de desempate por Relógio Lógico de Lamport
 // quando duas transações concorrentes disputam o último assento na fase PREPARED
-func tentarPreempcaoPorPrecedencia(caronas *[]Carona, transacoes *[]TransacaoGeral, caronaID string, indicePerna int, reqNova Requisicao2PCPrepare) bool {
+func tentarPreempcaoPorPrecedencia(caronas *[]Carona, transacoes *[]Transacao2PC, caronaID string, indicePerna int, reqNova Requisicao2PCPrepare) bool {
 	for i := range *transacoes {
 		tx := &(*transacoes)[i]
 		if tx.Estado != EstadoPrepared {
 			continue
 		}
 
-		// Verifica se a transação em PREPARED ocupa a mesma carona e perna
 		ocupaMesmaPerna := false
 		for _, tr := range tx.TrechosLocais {
 			if tr.CaronaID == caronaID {
@@ -524,9 +533,6 @@ func tentarPreempcaoPorPrecedencia(caronas *[]Carona, transacoes *[]TransacaoGer
 			continue
 		}
 
-		// Se a requisição que chegou agora pertence a OUTRO servidor e tem MAIOR precedência
-		// (menor Lamport / desempate determinístico), abortamos a transação PREPARED perdedora
-		// para evitar deadlock distribuído quando dois servidores distintos disputam os mesmos trechos!
 		if reqNova.CoordenadorURL != tx.CoordenadorURL && CompararPrecedencia(
 			reqNova.TimestampLamport, reqNova.EmpresaOrigemID, reqNova.TransacaoID,
 			tx.TimestampLamport, tx.EmpresaOrigemID, tx.TransacaoID) {
@@ -542,7 +548,7 @@ func tentarPreempcaoPorPrecedencia(caronas *[]Carona, transacoes *[]TransacaoGer
 	return false
 }
 
-func devolverAssentosDeTransacaoEmMemoria(caronas *[]Carona, tx TransacaoGeral) {
+func devolverAssentosDeTransacaoEmMemoria(caronas *[]Carona, tx Transacao2PC) {
 	for _, trecho := range tx.TrechosLocais {
 		for idxC, c := range *caronas {
 			if strings.TrimSpace(c.ID) == strings.TrimSpace(trecho.CaronaID) {
@@ -562,8 +568,7 @@ func ExecutarCommitLocal(transacaoID, reservaID string) (bool, string) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	transacoes, _ := CarregarTransacoesGerais()
-	for i, tx := range transacoes {
+	for i, tx := range transacoesMemoria {
 		if tx.TransacaoID == transacaoID {
 			if tx.Estado == EstadoCommitted {
 				return true, "Transação já confirmada."
@@ -571,11 +576,10 @@ func ExecutarCommitLocal(transacaoID, reservaID string) (bool, string) {
 			if tx.Estado == EstadoAborted {
 				return false, "Transação havia sido abortada por preempção ou timeout."
 			}
-			transacoes[i].Estado = EstadoCommitted
+			transacoesMemoria[i].Estado = EstadoCommitted
 			if reservaID != "" {
-				transacoes[i].ReservaID = reservaID
+				transacoesMemoria[i].ReservaID = reservaID
 			}
-			_ = SalvarTransacoesGerais(transacoes)
 			RegistrarLog("[2PC COMMIT] Transação %s CONFIRMADA definitivamente.", transacaoID)
 			return true, "Transação confirmada (COMMITTED)."
 		}
@@ -588,8 +592,7 @@ func ExecutarAbortLocal(transacaoID string) (bool, string) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	transacoes, _ := CarregarTransacoesGerais()
-	for i, tx := range transacoes {
+	for i, tx := range transacoesMemoria {
 		if tx.TransacaoID == transacaoID {
 			if tx.Estado == EstadoAborted {
 				return true, "Transação já estava abortada."
@@ -602,8 +605,7 @@ func ExecutarAbortLocal(transacaoID string) (bool, string) {
 					_ = os.WriteFile(ArquivoCaronas, dadosCaronas, 0644)
 				}
 			}
-			transacoes[i].Estado = EstadoAborted
-			_ = SalvarTransacoesGerais(transacoes)
+			transacoesMemoria[i].Estado = EstadoAborted
 			RegistrarLog("[2PC ABORT] Transação %s ABORTADA e assentos liberados.", transacaoID)
 			return true, "Transação abortada e assentos devolvidos."
 		}
@@ -683,34 +685,57 @@ func handler2PCAbort(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(Resposta2PC{Sucesso: ok, Estado: EstadoAborted, Mensagem: msg, Lamport: IncrementarLamport()})
 }
 
+// GET /api/2pc/status?transacao_id=TX-...&reserva_id=RES-...
+// Consulta o desfecho da transação diretamente na memória ou no reservas.json do coordenador
 func handler2PCStatus(w http.ResponseWriter, r *http.Request) {
 	txID := r.URL.Query().Get("transacao_id")
-	mu.Lock()
-	transacoes, _ := CarregarTransacoesGerais()
-	mu.Unlock()
+	resID := r.URL.Query().Get("reserva_id")
 
-	w.Header().Set("Content-Type", "application/json")
-	for _, tx := range transacoes {
+	mu.Lock()
+	for _, tx := range transacoesMemoria {
 		if tx.TransacaoID == txID {
+			estado := tx.Estado
+			mu.Unlock()
+			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(Resposta2PC{
 				Sucesso:  true,
-				Estado:   tx.Estado,
-				Mensagem: "Status localizado",
+				Estado:   estado,
+				Mensagem: "Status localizado em memória",
 				Lamport:  IncrementarLamport(),
 			})
 			return
 		}
 	}
-	// Se o coordenador não conhece a transação (ou caiu antes de gravar), assume ABORTED (Presumed Abort)
+
+	if resID != "" {
+		reservas, _ := CarregarReservas()
+		for _, res := range reservas {
+			if strings.TrimSpace(res.ID) == strings.TrimSpace(resID) {
+				mu.Unlock()
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(Resposta2PC{
+					Sucesso:  true,
+					Estado:   EstadoCommitted,
+					Mensagem: "Reserva confirmada em reservas.json",
+					Lamport:  IncrementarLamport(),
+				})
+				return
+			}
+		}
+	}
+	mu.Unlock()
+
+	// Presumed Abort: se a reserva não foi gravada em reservas.json do coordenador, assume ABORTED
+	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(Resposta2PC{
 		Sucesso:  true,
 		Estado:   EstadoAborted,
-		Mensagem: "Transação não encontrada no coordenador (Presumed Abort)",
+		Mensagem: "Reserva não confirmada no coordenador (Presumed Abort)",
 		Lamport:  IncrementarLamport(),
 	})
 }
 
-// CoordenarReserva2PC executa o protocolo Two-Phase Commit completo a partir do servidor do passageiro
+// CoordenarReserva2PC executa o protocolo Two-Phase Commit completo via requisições REST
 func CoordenarReserva2PC(passageiroID string, itinerario Itinerario) (*Reserva, error) {
 	muCoordenador2PC.Lock()
 	defer muCoordenador2PC.Unlock()
@@ -720,7 +745,6 @@ func CoordenarReserva2PC(passageiroID string, itinerario Itinerario) (*Reserva, 
 	transacaoID := fmt.Sprintf("TX-%s-%d", EmpresaAtualID, agora)
 	reservaID := fmt.Sprintf("RES-%d", agora)
 
-	// Garante que todos os trechos tenham ServidorURL preenchido (se vazio, pertence a este servidor)
 	for i := range itinerario.Trechos {
 		if itinerario.Trechos[i].ServidorURL == "" {
 			itinerario.Trechos[i].ServidorURL = ServidorAtualURL
@@ -730,7 +754,6 @@ func CoordenarReserva2PC(passageiroID string, itinerario Itinerario) (*Reserva, 
 		}
 	}
 
-	// Agrupa apenas as referências essenciais dos trechos por servidor participante
 	trechosPorServidor := make(map[string][]ReferenciaTrechoLocal)
 	var servidoresOrdenados []string
 	for _, t := range itinerario.Trechos {
@@ -744,12 +767,11 @@ func CoordenarReserva2PC(passageiroID string, itinerario Itinerario) (*Reserva, 
 			Destino:  t.Destino,
 		})
 	}
-	// Ordena as URLs dos servidores em ordem alfabética para evitar Deadlock Distribuído
 	sort.Strings(servidoresOrdenados)
 
 	var servidoresPreparados []string
 
-	// FASE 1: VOTACAO (PREPARE)
+	// FASE 1: VOTAÇÃO (PREPARE)
 	for _, urlSrv := range servidoresOrdenados {
 		reqPrep := Requisicao2PCPrepare{
 			TransacaoID:      transacaoID,
@@ -773,7 +795,6 @@ func CoordenarReserva2PC(passageiroID string, itinerario Itinerario) (*Reserva, 
 		if !prepOk {
 			// ROLLBACK ATÔMICO: Desfaz todos os servidores que já haviam preparado!
 			abortarParticipantes(servidoresPreparados, transacaoID, reservaID)
-			registrarAbortNoCoordenador(transacaoID, reservaID, passageiroID, lamportTx, servidoresOrdenados)
 			return nil, fmt.Errorf("reserva cancelada: %s", prepMsg)
 		}
 
@@ -781,7 +802,6 @@ func CoordenarReserva2PC(passageiroID string, itinerario Itinerario) (*Reserva, 
 	}
 
 	// FASE 2: CONFIRMAÇÃO (COMMIT)
-	// Verifica se nenhum participante sofreu preempção de Lamport no meio tempo antes de finalizar
 	for _, urlSrv := range servidoresPreparados {
 		var commitOk bool
 		var commitMsg string
@@ -793,32 +813,12 @@ func CoordenarReserva2PC(passageiroID string, itinerario Itinerario) (*Reserva, 
 		}
 
 		if !commitOk {
-			// Caso extremo: algum participante abortou por preempção/timeout ou caiu antes do commit
 			abortarParticipantes(servidoresPreparados, transacaoID, reservaID)
-			registrarAbortNoCoordenador(transacaoID, reservaID, passageiroID, lamportTx, servidoresOrdenados)
 			return nil, fmt.Errorf("reserva cancelada na confirmação: %s", commitMsg)
 		}
 	}
 
-	// Se o coordenador não era dono de nenhum trecho da viagem, registra apenas os IDs da transação e servidores participantes
-	if _, coordenadorParticipou := trechosPorServidor[ServidorAtualURL]; !coordenadorParticipou {
-		mu.Lock()
-		_ = RegistrarOuAtualizarTransacao(TransacaoGeral{
-			TransacaoID:             transacaoID,
-			ReservaID:               reservaID,
-			PassageiroID:            passageiroID,
-			EmpresaOrigemID:         EmpresaAtualID,
-			CoordenadorURL:          ServidorAtualURL,
-			ServidoresParticipantes: servidoresOrdenados,
-			TimestampLamport:        lamportTx,
-			Estado:                  EstadoCommitted,
-			CriadoEm:                time.Now(),
-			ExpiraEm:                time.Now().Add(TimeoutLock2PC),
-		})
-		mu.Unlock()
-	}
-
-	// Salva a reserva no reservas.json do servidor do passageiro
+	// Salva a reserva confirmada apenas no reservas.json do servidor do passageiro
 	novaReserva := Reserva{
 		ID:           reservaID,
 		PassageiroID: passageiroID,
@@ -900,88 +900,46 @@ func abortarParticipantes(servidores []string, transacaoID, reservaID string) {
 	}
 }
 
-// registrarAbortNoCoordenador garante que o coordenador registre explicitamente o estado ABORTED
-// em transacoesgerais.json para responder a consultas /api/2pc/status de servidores que caíram e voltaram depois
-func registrarAbortNoCoordenador(transacaoID, reservaID, passageiroID string, lamportTx uint64, servidores []string) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	transacoes, _ := CarregarTransacoesGerais()
-	for i, tx := range transacoes {
-		if tx.TransacaoID == transacaoID {
-			transacoes[i].Estado = EstadoAborted
-			_ = SalvarTransacoesGerais(transacoes)
-			return
-		}
-	}
-
-	transacoes = append(transacoes, TransacaoGeral{
-		TransacaoID:             transacaoID,
-		ReservaID:               reservaID,
-		PassageiroID:            passageiroID,
-		EmpresaOrigemID:         EmpresaAtualID,
-		CoordenadorURL:          ServidorAtualURL,
-		ServidoresParticipantes: servidores,
-		TimestampLamport:        lamportTx,
-		Estado:                  EstadoAborted,
-		CriadoEm:                time.Now(),
-		ExpiraEm:                time.Now().Add(TimeoutLock2PC),
-	})
-	_ = SalvarTransacoesGerais(transacoes)
-}
-
 // ============================================================================
-// 4. RECUPERAÇÃO DE FALHAS E TIMEOUT DE ASSENTOS BLOQUEADOS
+// 4. RECUPERAÇÃO DE FALHAS E TIMEOUT DE ASSENTOS BLOQUEADOS (VIA REST)
 // ============================================================================
 
-// limparTransacoesPreparedExpiradas evita que a queda do coordenador no meio do 2PC
-// deixe assentos bloqueados indefinidamente nos participantes (Item 4 do PDF)
 func limparTransacoesPreparedExpiradas() {
 	mu.Lock()
-	transacoes, err := CarregarTransacoesGerais()
+	copia := append([]Transacao2PC(nil), transacoesMemoria...)
 	mu.Unlock()
-	if err != nil || len(transacoes) == 0 {
-		return
-	}
 
 	agora := time.Now()
-	for _, tx := range transacoes {
+	for _, tx := range copia {
 		if tx.Estado == EstadoPrepared && agora.After(tx.ExpiraEm) {
 			resolverTransacaoPendente(tx)
 		}
 	}
 }
 
-// RecuperarTransacoesPendentes é executada quando o servidor reinicia após uma queda
-// ou quando um parceiro volta a ficar ONLINE
+// RecuperarTransacoesPendentes consulta via REST o coordenador das transações em PREPARED
 func RecuperarTransacoesPendentes() {
 	mu.Lock()
-	transacoes, err := CarregarTransacoesGerais()
+	copia := append([]Transacao2PC(nil), transacoesMemoria...)
 	mu.Unlock()
-	if err != nil || len(transacoes) == 0 {
-		return
-	}
 
-	for _, tx := range transacoes {
+	for _, tx := range copia {
 		if tx.Estado == EstadoPrepared {
 			resolverTransacaoPendente(tx)
 		}
 	}
 }
 
-func resolverTransacaoPendente(tx TransacaoGeral) {
-	// Se este próprio servidor era o coordenador e ainda está em PREPARED sem ter chegado ao COMMIT, aborta!
+func resolverTransacaoPendente(tx Transacao2PC) {
 	if tx.CoordenadorURL == "" || tx.CoordenadorURL == ServidorAtualURL {
 		RegistrarLog("[RECOVERY 2PC] Abortando transação local órfã %s e liberando assentos.", tx.TransacaoID)
 		ExecutarAbortLocal(tx.TransacaoID)
 		return
 	}
 
-	// Pergunta ao servidor coordenador qual foi o desfecho da transação
-	resp, err := clienteHeartbeat.Get(tx.CoordenadorURL + "/api/2pc/status?transacao_id=" + tx.TransacaoID)
+	endpoint := fmt.Sprintf("%s/api/2pc/status?transacao_id=%s&reserva_id=%s", tx.CoordenadorURL, tx.TransacaoID, tx.ReservaID)
+	resp, err := clienteHeartbeat.Get(endpoint)
 	if err != nil || resp == nil {
-		// Se já expirou o tempo limite e o coordenador está inacessível, aplica Presumed Abort
-		// para nunca manter assento bloqueado indefinidamente!
 		if time.Now().After(tx.ExpiraEm) {
 			RegistrarLog("[RECOVERY 2PC] Coordenador %s inacessível após timeout. Liberando assentos da transação %s (Presumed Abort).",
 				tx.CoordenadorURL, tx.TransacaoID)
@@ -1006,8 +964,75 @@ func resolverTransacaoPendente(tx TransacaoGeral) {
 }
 
 // ============================================================================
-// 5. CANCELAMENTOS ENTRE EMPRESAS (RESERVAS E CARONAS)
+// 5. CONSULTAS E CANCELAMENTOS ENTRE EMPRESAS 100% VIA REQUISIÇÕES REST
 // ============================================================================
+
+// GET /api/caronas/passageiros?carona_id=CAR-123&servidor_url=http://...
+// Chamado pelo servidor do motorista para descobrir quais passageiros desta empresa compraram vaga naquela carona
+func handlerConsultarPassageirosCaronaRemota(w http.ResponseWriter, r *http.Request) {
+	caronaID := strings.TrimSpace(r.URL.Query().Get("carona_id"))
+	servidorOrigem := strings.TrimRight(strings.TrimSpace(r.URL.Query().Get("servidor_url")), "/")
+
+	mu.Lock()
+	reservas, _ := CarregarReservas()
+	mu.Unlock()
+
+	var passageiros []string
+	for _, res := range reservas {
+		for _, tr := range res.Itinerario {
+			urlTrecho := strings.TrimRight(strings.TrimSpace(tr.ServidorURL), "/")
+			if strings.TrimSpace(tr.CaronaID) == caronaID && (servidorOrigem == "" || urlTrecho == "" || urlTrecho == servidorOrigem) {
+				passageiros = append(passageiros, res.PassageiroID)
+				break
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(passageiros)
+}
+
+// ConsultarPassageirosRemotosDaCarona pergunta via HTTP GET a todos os servidores parceiros
+// quais passageiros deles possuem reserva ativa na carona informada
+func ConsultarPassageirosRemotosDaCarona(caronaID string) []string {
+	muPeers.RLock()
+	urls := make([]string, 0, len(PeersConsorcio))
+	for u := range PeersConsorcio {
+		urls = append(urls, u)
+	}
+	muPeers.RUnlock()
+
+	var resultado []string
+	var muRes sync.Mutex
+	var wg sync.WaitGroup
+
+	for _, urlPeer := range urls {
+		wg.Add(1)
+		go func(peerURL string) {
+			defer wg.Done()
+			endpoint := fmt.Sprintf("%s/api/caronas/passageiros?carona_id=%s&servidor_url=%s",
+				peerURL, caronaID, ServidorAtualURL)
+			resp, err := clienteHeartbeat.Get(endpoint)
+			if err != nil || resp == nil {
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return
+			}
+			var lista []string
+			if err := json.NewDecoder(resp.Body).Decode(&lista); err == nil && len(lista) > 0 {
+				muRes.Lock()
+				resultado = append(resultado, lista...)
+				muRes.Unlock()
+			}
+		}(urlPeer)
+	}
+
+	wg.Wait()
+	return resultado
+}
 
 type RequisicaoLiberarTrechos struct {
 	ReservaID string         `json:"reserva_id"`
@@ -1032,7 +1057,7 @@ func handlerLiberarAssentosReserva(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(map[string]bool{"sucesso": true})
 }
 
-// LiberarAssentosLocais devolve os assentos no caronas.json local e marca a transação em transacoesgerais.json como ABORTED
+// LiberarAssentosLocais devolve os assentos no caronas.json local
 func LiberarAssentosLocais(reservaID string, trechos []ArestaTrecho) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -1059,21 +1084,11 @@ func LiberarAssentosLocais(reservaID string, trechos []ArestaTrecho) {
 	}
 
 	if reservaID != "" {
-		transacoes, _ := CarregarTransacoesGerais()
-		alterou := false
-		for i, tx := range transacoes {
-			if strings.TrimSpace(tx.ReservaID) == strings.TrimSpace(reservaID) && tx.Estado != EstadoAborted {
-				transacoes[i].Estado = EstadoAborted
-				alterou = true
-			}
-		}
-		if alterou {
-			_ = SalvarTransacoesGerais(transacoes)
-		}
+		marcarReservaAbortadaEmMemoria(reservaID)
 	}
 }
 
-// EnviarLiberacaoRemota envia requisição para outro servidor devolver os assentos de uma reserva cancelada
+// EnviarLiberacaoRemota envia requisição REST para outro servidor devolver os assentos de uma reserva cancelada
 func EnviarLiberacaoRemota(urlSrv, reservaID string, trechos []ArestaTrecho) {
 	body, _ := json.Marshal(RequisicaoLiberarTrechos{
 		ReservaID: reservaID,
@@ -1086,58 +1101,87 @@ func EnviarLiberacaoRemota(urlSrv, reservaID string, trechos []ArestaTrecho) {
 	_ = err
 }
 
-// POST /api/caronas/cancelada -> Notifica o servidor do passageiro (coordenador) que uma carona remota foi cancelada pelo motorista.
-// O servidor do passageiro remove a reserva e envia requisição para liberar os assentos nos demais servidores participantes!
+// POST /api/caronas/cancelada -> Recebe de outro servidor a notificação de que uma carona foi cancelada pelo motorista.
+// Varre o reservas.json local: se encontrar reservas que usavam aquela carona, apaga-as e libera os demais trechos!
 func handlerNotificarCaronaCancelada(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "método não permitido", http.StatusMethodNotAllowed)
 		return
 	}
 	var req struct {
-		ReservaID string `json:"reserva_id"`
-		CaronaID  string `json:"carona_id"`
+		ReservaID   string `json:"reserva_id,omitempty"`
+		CaronaID    string `json:"carona_id"`
+		ServidorURL string `json:"servidor_url,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "payload inválido", http.StatusBadRequest)
 		return
 	}
 
+	caronaIDClean := strings.TrimSpace(req.CaronaID)
+	srvOrigemClean := strings.TrimRight(strings.TrimSpace(req.ServidorURL), "/")
+
 	mu.Lock()
 	reservas, _ := CarregarReservas()
 	novasReservas := make([]Reserva, 0, len(reservas))
-	var reservaRemovida *Reserva
+	var reservasRemovidas []Reserva
 
 	for _, res := range reservas {
-		if strings.TrimSpace(res.ID) == strings.TrimSpace(req.ReservaID) {
-			copia := res
-			reservaRemovida = &copia
+		atingida := false
+		if req.ReservaID != "" && strings.TrimSpace(res.ID) == strings.TrimSpace(req.ReservaID) {
+			atingida = true
+		} else if caronaIDClean != "" {
+			for _, tr := range res.Itinerario {
+				urlTr := strings.TrimRight(strings.TrimSpace(tr.ServidorURL), "/")
+				if strings.TrimSpace(tr.CaronaID) == caronaIDClean && (srvOrigemClean == "" || urlTr == "" || urlTr == srvOrigemClean) {
+					atingida = true
+					break
+				}
+			}
+		}
+
+		if atingida {
+			reservasRemovidas = append(reservasRemovidas, res)
+			marcarReservaAbortadaEmMemoria(res.ID)
 			continue
 		}
 		novasReservas = append(novasReservas, res)
 	}
-	dadosReservas, _ := json.MarshalIndent(novasReservas, "", "  ")
-	_ = os.WriteFile(ArquivoReservas, dadosReservas, 0644)
 
-	// Se a reserva tinha trechos locais neste próprio servidor ou em outros servidores do consórcio, prepara a liberação
-	trechosRemotosPorServidor := make(map[string][]ArestaTrecho)
-	if reservaRemovida != nil {
+	type liberacaoPendente struct {
+		url       string
+		reservaID string
+		trechos   []ArestaTrecho
+	}
+	var liberacoesRemotas []liberacaoPendente
+
+	if len(reservasRemovidas) > 0 {
+		dadosReservas, _ := json.MarshalIndent(novasReservas, "", "  ")
+		_ = os.WriteFile(ArquivoReservas, dadosReservas, 0644)
+
 		caronas, err := CarregarCaronas()
 		if err == nil {
-			for _, tr := range reservaRemovida.Itinerario {
-				if tr.CaronaID == req.CaronaID {
-					continue // A carona cancelada já liberou seus assentos lá na origem
-				}
-				urlSrv := strings.TrimRight(strings.TrimSpace(tr.ServidorURL), "/")
-				if urlSrv != "" && urlSrv != ServidorAtualURL {
-					trechosRemotosPorServidor[urlSrv] = append(trechosRemotosPorServidor[urlSrv], tr)
-					continue
-				}
-				for idxC, c := range caronas {
-					if strings.TrimSpace(c.ID) == strings.TrimSpace(tr.CaronaID) {
-						indices := localizarIndicesTrecho(c, tr.Origem, tr.Destino)
-						for _, idx := range indices {
-							if caronas[idxC].Trechos[idx].AssentosLivre < caronas[idxC].AssentosTot {
-								caronas[idxC].Trechos[idx].AssentosLivre++
+			for _, resRem := range reservasRemovidas {
+				for _, tr := range resRem.Itinerario {
+					if strings.TrimSpace(tr.CaronaID) == caronaIDClean {
+						continue // A carona cancelada já foi desativada no servidor do motorista
+					}
+					urlSrv := strings.TrimRight(strings.TrimSpace(tr.ServidorURL), "/")
+					if urlSrv != "" && urlSrv != ServidorAtualURL {
+						liberacoesRemotas = append(liberacoesRemotas, liberacaoPendente{
+							url:       urlSrv,
+							reservaID: resRem.ID,
+							trechos:   []ArestaTrecho{tr},
+						})
+						continue
+					}
+					for idxC, c := range caronas {
+						if strings.TrimSpace(c.ID) == strings.TrimSpace(tr.CaronaID) {
+							indices := localizarIndicesTrecho(c, tr.Origem, tr.Destino)
+							for _, idx := range indices {
+								if caronas[idxC].Trechos[idx].AssentosLivre < caronas[idxC].AssentosTot {
+									caronas[idxC].Trechos[idx].AssentosLivre++
+								}
 							}
 						}
 					}
@@ -1147,35 +1191,59 @@ func handlerNotificarCaronaCancelada(w http.ResponseWriter, r *http.Request) {
 			_ = os.WriteFile(ArquivoCaronas, dadosCaronas, 0644)
 		}
 	}
-
-	transacoes, _ := CarregarTransacoesGerais()
-	for i, tx := range transacoes {
-		if strings.TrimSpace(tx.ReservaID) == strings.TrimSpace(req.ReservaID) {
-			transacoes[i].Estado = EstadoAborted
-		}
-	}
-	_ = SalvarTransacoesGerais(transacoes)
 	mu.Unlock()
 
-	// Pede via requisição REST para que os outros servidores do itinerário devolvam os assentos
-	for urlSrv, trechos := range trechosRemotosPorServidor {
-		EnviarLiberacaoRemota(urlSrv, req.ReservaID, trechos)
+	for _, lib := range liberacoesRemotas {
+		EnviarLiberacaoRemota(lib.url, lib.reservaID, lib.trechos)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]bool{"sucesso": true})
 }
 
-// NotificarCancelamentoCaronaRemota avisa o coordenador (empresa do passageiro) para remover a reserva de reservas.json
-func NotificarCancelamentoCaronaRemota(coordenadorURL, reservaID, caronaID string) {
+// NotificarCancelamentoCaronaAosPeers avisa via requisição REST todos os servidores parceiros
+// que uma carona deste servidor foi cancelada pelo motorista
+func NotificarCancelamentoCaronaAosPeers(caronaID string) {
+	muPeers.RLock()
+	urls := make([]string, 0, len(PeersConsorcio))
+	for u := range PeersConsorcio {
+		urls = append(urls, u)
+	}
+	muPeers.RUnlock()
+
+	for _, urlPeer := range urls {
+		NotificarCancelamentoCaronaRemota(urlPeer, "", caronaID)
+	}
+}
+
+// NotificarCancelamentoCaronaRemota envia POST /api/caronas/cancelada para um servidor do consórcio
+func NotificarCancelamentoCaronaRemota(destinoURL, reservaID, caronaID string) {
 	body, _ := json.Marshal(map[string]string{
-		"reserva_id": reservaID,
-		"carona_id":  caronaID,
+		"reserva_id":   reservaID,
+		"carona_id":    caronaID,
+		"servidor_url": ServidorAtualURL,
 	})
-	resp, err := clienteHTTP.Post(strings.TrimRight(coordenadorURL, "/")+"/api/caronas/cancelada", "application/json", bytes.NewReader(body))
+	resp, err := clienteHTTP.Post(strings.TrimRight(destinoURL, "/")+"/api/caronas/cancelada", "application/json", bytes.NewReader(body))
 	if resp != nil {
 		resp.Body.Close()
 	}
 	_ = err
 }
 
+// sincronizarCaronasInativasComPeer é disparada quando um servidor parceiro volta a ficar ONLINE no Heartbeat:
+// reenvia via REST o aviso de quaisquer caronas locais desativadas (Ativa == false) para que o parceiro
+// apague reservas que tenham sido afetadas enquanto ele estava fora do ar.
+func sincronizarCaronasInativasComPeer(urlPeer string) {
+	mu.Lock()
+	caronas, err := CarregarCaronas()
+	mu.Unlock()
+	if err != nil {
+		return
+	}
+
+	for _, c := range caronas {
+		if !c.Ativa {
+			NotificarCancelamentoCaronaRemota(urlPeer, "", c.ID)
+		}
+	}
+}

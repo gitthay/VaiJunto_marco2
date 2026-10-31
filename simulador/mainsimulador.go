@@ -95,7 +95,7 @@ func publicarCaronasCenarioConsorcio(servidores []string, assentosPorCarona int,
 		resp, err := enviarReqSimulador(conn, utils.AcaoPublicarCarona, motoristaEmail, carona)
 		conn.Close()
 		if err == nil && resp.Sucesso {
-			fmt.Printf("[SEMEADURA] Carona publicada em %s: %s -> %s (%d assentos)\n",
+			fmt.Printf("Carona publicada em %s: %s -> %s (%d assentos)\n",
 				srv, rota.origem, rota.destino, assentosPorCarona)
 		}
 	}
@@ -103,7 +103,7 @@ func publicarCaronasCenarioConsorcio(servidores []string, assentosPorCarona int,
 
 func main() {
 	servidoresFlag := flag.String("servers", "localhost:8081,localhost:8082,localhost:8083", "Endereços TCP dos servidores das empresas do consórcio separados por vírgula")
-	qtdPassageiros := flag.Int("clientes", 30, "Quantidade de passageiros simultâneos gerando buscas e reservas")
+	qtdPassageiros := flag.Int("clientes", 300, "Quantidade de passageiros simultâneos gerando buscas e reservas")
 	assentosOferta := flag.Int("assentos", 10, "Quantidade de assentos ofertados em cada trecho para o teste de carga")
 	origemBusca := flag.String("origem", "Salvador", "Cidade de origem para as buscas dos passageiros")
 	destinoBusca := flag.String("destino", "Montes Claros", "Cidade de destino para as buscas dos passageiros")

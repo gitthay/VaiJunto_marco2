@@ -182,15 +182,14 @@ func ConsolidarTrechos(trechos []ArestaTrecho) []ArestaTrecho {
 	return consolidados
 }
 
-// persistencia de caronas e isolamento por instancia de empresa
+// persistencia de caronas e isolamento por instancia de empresa (apenas os 3 arquivos originais)
 var (
-	EmpresaAtualID        = "vaijunto"
-	ServidorAtualURL      = "http://localhost:9080"
-	ArquivoCaronas        = "caronas.json"
-	ArquivoReservas       = "reservas.json"
-	mu                    sync.Mutex // Evita conflito de concorrência entre goroutines do servidor
-	ArquivoUsuarios       = "usuarios.json"
-	ArquivoTransacoes     = "transacoesgerais.json"
+	EmpresaAtualID   = "vaijunto"
+	ServidorAtualURL = "http://localhost:9080"
+	ArquivoCaronas   = "caronas.json"
+	ArquivoReservas  = "reservas.json"
+	mu               sync.Mutex // Evita conflito de concorrência entre goroutines do servidor
+	ArquivoUsuarios  = "usuarios.json"
 )
 
 // ConfigurarInstancia define a identidade da empresa e isola os arquivos JSON em pasta própria
@@ -211,50 +210,9 @@ func ConfigurarInstancia(empresaID, servidorURL string) error {
 		ArquivoCaronas = filepath.Join(pasta, "caronas.json")
 		ArquivoReservas = filepath.Join(pasta, "reservas.json")
 		ArquivoUsuarios = filepath.Join(pasta, "usuarios.json")
-		ArquivoTransacoes = filepath.Join(pasta, "transacoesgerais.json")
 		ArquivoLog = filepath.Join(pasta, "servidor.log")
 	}
 	return nil
-}
-
-// lê todas as transações de redundância salvas no arquivo transacoesgerais.json
-func CarregarTransacoesGerais() ([]TransacaoGeral, error) {
-	if _, err := os.Stat(ArquivoTransacoes); os.IsNotExist(err) {
-		return []TransacaoGeral{}, nil
-	}
-	dados, err := os.ReadFile(ArquivoTransacoes)
-	if err != nil || len(dados) == 0 {
-		return []TransacaoGeral{}, nil
-	}
-	var transacoes []TransacaoGeral
-	err = json.Unmarshal(dados, &transacoes)
-	return transacoes, err
-}
-
-// grava a lista atualizada de transações no arquivo transacoesgerais.json
-func SalvarTransacoesGerais(transacoes []TransacaoGeral) error {
-	dados, err := json.MarshalIndent(transacoes, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(ArquivoTransacoes, dados, 0644)
-}
-
-// adiciona ou atualiza uma transação de redundância (usado pelo 2PC e recuperação de falhas)
-func RegistrarOuAtualizarTransacao(tx TransacaoGeral) error {
-	transacoes, _ := CarregarTransacoesGerais()
-	atualizado := false
-	for i, t := range transacoes {
-		if t.TransacaoID == tx.TransacaoID {
-			transacoes[i] = tx
-			atualizado = true
-			break
-		}
-	}
-	if !atualizado {
-		transacoes = append(transacoes, tx)
-	}
-	return SalvarTransacoesGerais(transacoes)
 }
 
 // lê todas as caronas salvas no arquivo JSON
@@ -323,10 +281,6 @@ func CarregarReservas() ([]Reserva, error) {
 
 // localiza, dentro dos trechos ORIGINAIS de uma carona, a sequência contínua de índices
 // que corresponde a um trecho (possivelmente consolidado) de "origem" até "destino".
-// Necessário porque ConsolidarTrechos funde vários trechos da mesma carona (ex: ssa->x->recife)
-// em um único trecho exibido ao passageiro (ssa->recife), mas o arquivo caronas.json continua
-// guardando os trechos separados. Sem isso, a validação/desconto de assentos nunca encontra
-// o trecho consolidado e a reserva falha mesmo havendo assentos livres.
 func localizarIndicesTrecho(carona Carona, origem, destino string) []int {
 	for i, t := range carona.Trechos {
 		if t.Origem != origem {
@@ -379,7 +333,7 @@ func ListarReservasPassageiro(passageiroID string) ([]Reserva, error) {
 	return minhasReservas, nil
 }
 
-// remove a reserva e devolve os assentos para as caronas correspondentes (locais e remotas no consórcio)
+// remove a reserva e devolve os assentos para as caronas correspondentes (locais e remotas no consórcio via REST)
 func CancelarReserva(reservaID, passageiroID string) error {
 	mu.Lock()
 
@@ -444,14 +398,8 @@ func CancelarReserva(reservaID, passageiroID string) error {
 		_ = os.WriteFile(ArquivoCaronas, dadosCaronas, 0644)
 	}
 
-	// Atualiza o estado no transacoesgerais.json local
-	transacoes, _ := CarregarTransacoesGerais()
-	for i, tx := range transacoes {
-		if strings.TrimSpace(tx.ReservaID) == reservaIDClean {
-			transacoes[i].Estado = EstadoAborted
-		}
-	}
-	_ = SalvarTransacoesGerais(transacoes)
+	// Marca em memória como abortada caso estivesse registrada na sessão
+	marcarReservaAbortadaEmMemoria(reservaIDClean)
 
 	// Atualiza o arquivo de reservas
 	dadosReservas, err := json.MarshalIndent(novaListaReservas, "", "  ")
@@ -462,7 +410,7 @@ func CancelarReserva(reservaID, passageiroID string) error {
 	err = os.WriteFile(ArquivoReservas, dadosReservas, 0644)
 	mu.Unlock()
 
-	// Notifica os demais servidores do consórcio para liberarem seus respectivos assentos
+	// Notifica via requisição REST os demais servidores do consórcio para liberarem seus assentos
 	for urlSrv, trechos := range trechosRemotosPorServidor {
 		EnviarLiberacaoRemota(urlSrv, reservaIDClean, trechos)
 	}
@@ -489,8 +437,11 @@ func ConsultarCaronasMotorista(motoristaID string) ([]Carona, error) {
 	return minhasCaronas, nil
 }
 
-// cancela a carona e verifica se há passageiros afetados (locais e de outras empresas via transacoesgerais.json)
+// cancela a carona e verifica se há passageiros afetados (locais e de outras empresas via requisição REST)
 func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageiros bool) (bool, string, error) {
+	// Primeiro consulta via REST quais passageiros de empresas parceiras possuem reserva nesta carona
+	passageirosRemotos := ConsultarPassageirosRemotosDaCarona(caronaID)
+
 	mu.Lock()
 
 	caronas, err := CarregarCaronas()
@@ -517,9 +468,8 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 		return false, "", fmt.Errorf("carona %s não encontrada", caronaID)
 	}
 
-	// Checa se existem reservas associadas a esta carona (tanto em reservas.json quanto em transacoesgerais.json)
+	// Checa reservas locais e soma com os passageiros remotos consultados via REST
 	reservas, _ := CarregarReservas()
-	transacoes, _ := CarregarTransacoesGerais()
 	passageirosAfetados := make(map[string]bool)
 
 	for _, r := range reservas {
@@ -529,14 +479,8 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 			}
 		}
 	}
-	for _, tx := range transacoes {
-		if tx.Estado == EstadoCommitted {
-			for _, trecho := range tx.TrechosLocais {
-				if trecho.CaronaID == caronaID {
-					passageirosAfetados[tx.PassageiroID] = true
-				}
-			}
-		}
+	for _, pRemoto := range passageirosRemotos {
+		passageirosAfetados[pRemoto] = true
 	}
 
 	qtdPassageiros := len(passageirosAfetados)
@@ -556,14 +500,9 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 		trechos   []ArestaTrecho
 	}
 	var liberacoesRemotas []acaoRemota
-	var notificacoesCoordenador []struct {
-		coordenadorURL string
-		reservaID      string
-	}
-	reservasJaDevolvidasLocalmente := make(map[string]bool)
 
 	// Remove as reservas ativas locais dessa carona cancelada e devolve os assentos
-	if qtdPassageiros > 0 {
+	if len(reservas) > 0 {
 		novasReservas := make([]Reserva, 0)
 		for _, r := range reservas {
 			temCaronaCancelada := false
@@ -574,7 +513,7 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 				}
 			}
 			if temCaronaCancelada {
-				reservasJaDevolvidasLocalmente[r.ID] = true
+				marcarReservaAbortadaEmMemoria(r.ID)
 				for _, trechoReservado := range r.Itinerario {
 					urlSrv := strings.TrimRight(strings.TrimSpace(trechoReservado.ServidorURL), "/")
 					if urlSrv != "" && urlSrv != ServidorAtualURL {
@@ -602,47 +541,6 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 		}
 		dadosReservas, _ := json.MarshalIndent(novasReservas, "", "  ")
 		_ = os.WriteFile(ArquivoReservas, dadosReservas, 0644)
-
-		// Também processa transações de passageiros de outras empresas registradas em transacoesgerais.json
-		for i, tx := range transacoes {
-			if tx.Estado != EstadoCommitted {
-				continue
-			}
-			temCarona := false
-			for _, trecho := range tx.TrechosLocais {
-				if trecho.CaronaID == caronaID {
-					temCarona = true
-					break
-				}
-			}
-			if !temCarona {
-				continue
-			}
-
-			transacoes[i].Estado = EstadoAborted
-			if tx.CoordenadorURL != "" && tx.CoordenadorURL != ServidorAtualURL {
-				notificacoesCoordenador = append(notificacoesCoordenador, struct {
-					coordenadorURL string
-					reservaID      string
-				}{coordenadorURL: tx.CoordenadorURL, reservaID: tx.ReservaID})
-			}
-
-			if !reservasJaDevolvidasLocalmente[tx.ReservaID] {
-				for _, trechoReservado := range tx.TrechosLocais {
-					for idxC, c := range caronas {
-						if strings.TrimSpace(c.ID) == strings.TrimSpace(trechoReservado.CaronaID) {
-							indices := localizarIndicesTrecho(c, trechoReservado.Origem, trechoReservado.Destino)
-							for _, idx := range indices {
-								if caronas[idxC].Trechos[idx].AssentosLivre < caronas[idxC].AssentosTot {
-									caronas[idxC].Trechos[idx].AssentosLivre++
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		_ = SalvarTransacoesGerais(transacoes)
 	}
 
 	dadosCaronas, _ := json.MarshalIndent(caronas, "", "  ")
@@ -652,10 +550,9 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 	}
 	mu.Unlock()
 
-	// Dispara notificações para outros servidores do consórcio devolverem assentos e apagarem a reserva afetada
-	for _, notif := range notificacoesCoordenador {
-		NotificarCancelamentoCaronaRemota(notif.coordenadorURL, notif.reservaID, caronaID)
-	}
+	// Notifica via requisição REST todos os servidores parceiros do consórcio sobre o cancelamento desta carona
+	NotificarCancelamentoCaronaAosPeers(caronaID)
+
 	for _, lib := range liberacoesRemotas {
 		EnviarLiberacaoRemota(lib.url, lib.reservaID, lib.trechos)
 	}
@@ -663,8 +560,10 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 	return false, "Carona cancelada com sucesso!", nil
 }
 
-// retorna quais passageiros compraram assentos na carona (locais ou de outras empresas do consórcio)
+// retorna quais passageiros compraram assentos na carona (locais + consulta REST às empresas parceiras)
 func ConsultarPassageirosCarona(caronaID, motoristaID string) ([]string, error) {
+	passageirosRemotos := ConsultarPassageirosRemotosDaCarona(caronaID)
+
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -682,15 +581,8 @@ func ConsultarPassageirosCarona(caronaID, motoristaID string) ([]string, error) 
 		}
 	}
 
-	transacoes, _ := CarregarTransacoesGerais()
-	for _, tx := range transacoes {
-		if tx.Estado == EstadoCommitted {
-			for _, trecho := range tx.TrechosLocais {
-				if trecho.CaronaID == caronaID {
-					passageirosMap[tx.PassageiroID] = true
-				}
-			}
-		}
+	for _, p := range passageirosRemotos {
+		passageirosMap[p] = true
 	}
 
 	var lista []string
