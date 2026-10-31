@@ -192,3 +192,6 @@ Parâmetros opcionais do simulador:
 ## Autor
 
 Trabalho desenvolvido por **Thaylane da Silva** para a disciplina **TEC502 — Concorrência e Conectividade** (UEFS).
+docker run --rm -p 8083:8083 -p 9083:9083 vaijunto-servidor:latest -id=empresaC -tcp=:8083 -http=:9083 -url=http://172.16.201.5:9083 -peers=http://172.16.201.10:9081,http://172.16.201.4:9082
+
+docker run --rm -p 8082:8082 -p 9082:9082 vaijunto-servidor:latest -id=empresaB -tcp=:8082 -http=:9082 -url=http://172.16.201.4:9082 -peers=http://172.16.201.10:9081,http://172.16.201.5:9083
