@@ -24,34 +24,103 @@ func lerTexto(rotulo string) string {
 	return strings.TrimSpace(texto)
 }
 
-// função auxiliar para consultar a lista atual de caronas
-func buscarCaronas(conexao net.Conn, email string, buf []byte) []utils.Carona {
-	req := utils.MensagemRequisicao{Acao: utils.AcaoConsultarCaronas, Usuario: email}
+// enviarRequisicaoTCP envia uma requisição ao servidor e detecta quedas de conexão (EOF / reset).
+// Se o servidor tiver caído, avisa claramente ao usuário e tenta reconectar automaticamente
+// caso o servidor já tenha voltado ao ar.
+func enviarRequisicaoTCP(conexao *net.Conn, serverAddr, email, senha string, req utils.MensagemRequisicao, buf []byte) (utils.MensagemResposta, bool) {
 	reqBytes, _ := json.Marshal(req)
-	conexao.Write(reqBytes)
 
-	n, _ := conexao.Read(buf)
+	if *conexao != nil {
+		_, errW := (*conexao).Write(reqBytes)
+		if errW == nil {
+			n, errR := (*conexao).Read(buf)
+			if errR == nil && n > 0 {
+				var resp utils.MensagemResposta
+				_ = json.Unmarshal(buf[:n], &resp)
+				return resp, true
+			}
+		}
+		_ = (*conexao).Close()
+		*conexao = nil
+	}
+
+	fmt.Printf("\n[ALERTA DE REDE]: A conexão com o servidor (%s) foi perdida! Tentando reconectar...\n", serverAddr)
+
+	novaConn, errDial := net.DialTimeout("tcp", serverAddr, 2*time.Second)
+	if errDial != nil {
+		fmt.Printf("[SERVIDOR OFFLINE]: O servidor (%s) caiu e continua fora do ar no momento. Aguarde ele voltar e tente novamente.\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+
+	// Servidor voltou: reautentica automaticamente a sessão do motorista
+	payloadAuth, _ := json.Marshal(map[string]interface{}{
+		"email": email,
+		"senha": senha,
+		"tipo":  utils.TipoMotorista,
+	})
+	reqAuth := utils.MensagemRequisicao{
+		Acao:    utils.AcaoAutenticar,
+		Usuario: email,
+		Payload: payloadAuth,
+	}
+	reqAuthBytes, _ := json.Marshal(reqAuth)
+	if _, err := novaConn.Write(reqAuthBytes); err != nil {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: Falha ao restabelecer sessão com o servidor (%s).\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+	nAuth, errAuth := novaConn.Read(buf)
+	if errAuth != nil || nAuth == 0 {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: O servidor (%s) não respondeu à reconexão.\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+
+	// Reenvia a requisição original após reconectar com sucesso
+	if _, err := novaConn.Write(reqBytes); err != nil {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: Perda de conexão ao reenviar requisição para (%s).\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+	n, err := novaConn.Read(buf)
+	if err != nil || n == 0 {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: Sem resposta do servidor (%s).\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+
+	*conexao = novaConn
+	fmt.Printf("[RECONECTADO]: Conexão restabelecida automaticamente com o servidor (%s)!\n", serverAddr)
+
 	var resp utils.MensagemResposta
-	json.Unmarshal(buf[:n], &resp)
-
-	var caronas []utils.Carona
-	json.Unmarshal(resp.Payload, &caronas)
-	return caronas
+	_ = json.Unmarshal(buf[:n], &resp)
+	return resp, true
 }
 
-func buscarPassageirosDaCarona(conexao net.Conn, email, caronaID string, buf []byte) []string {
+// função auxiliar para consultar a lista atual de caronas
+func buscarCaronas(conexao *net.Conn, serverAddr, email, senha string, buf []byte) ([]utils.Carona, bool) {
+	req := utils.MensagemRequisicao{Acao: utils.AcaoConsultarCaronas, Usuario: email}
+	resp, ok := enviarRequisicaoTCP(conexao, serverAddr, email, senha, req, buf)
+	if !ok {
+		return nil, false
+	}
+
+	var caronas []utils.Carona
+	_ = json.Unmarshal(resp.Payload, &caronas)
+	return caronas, true
+}
+
+func buscarPassageirosDaCarona(conexao *net.Conn, serverAddr, email, senha, caronaID string, buf []byte) ([]string, bool) {
 	payload, _ := json.Marshal(map[string]string{"carona_id": caronaID})
 	req := utils.MensagemRequisicao{Acao: utils.AcaoConsultarPassageirosCarona, Usuario: email, Payload: payload}
-	reqBytes, _ := json.Marshal(req)
-	conexao.Write(reqBytes)
-
-	n, _ := conexao.Read(buf)
-	var resp utils.MensagemResposta
-	json.Unmarshal(buf[:n], &resp)
+	resp, ok := enviarRequisicaoTCP(conexao, serverAddr, email, senha, req, buf)
+	if !ok {
+		return nil, false
+	}
 
 	var passageiros []string
-	json.Unmarshal(resp.Payload, &passageiros)
-	return passageiros
+	_ = json.Unmarshal(resp.Payload, &passageiros)
+	return passageiros, true
 }
 
 func main() {
@@ -64,19 +133,23 @@ func main() {
 	if err != nil {
 		log.Fatalln("Erro ao conectar ao servidor:", err)
 	}
-	defer conexao.Close()
+	defer func() {
+		if conexao != nil {
+			_ = conexao.Close()
+		}
+	}()
 
-	buf := make([]byte, 8192)
+	buf := make([]byte, 16384)
 
 	fmt.Println("==========================================")
 	fmt.Println("        VAIJUNTO - MOTORISTA              ")
 	fmt.Println("==========================================")
 
 	// AUTENTICAÇÃO
-	var email string
+	var email, senha string
 	for {
 		email = lerTexto("Digite seu Email: ")
-		senha := lerTexto("Digite sua Senha: ")
+		senha = lerTexto("Digite sua Senha: ")
 
 		payloadAuth, _ := json.Marshal(map[string]interface{}{
 			"email": email,
@@ -90,15 +163,15 @@ func main() {
 			Payload: payloadAuth,
 		}
 		reqAuthBytes, _ := json.Marshal(reqAuth)
-		conexao.Write(reqAuthBytes)
+		_, _ = conexao.Write(reqAuthBytes)
 
 		n, err := conexao.Read(buf)
 		if err != nil {
-			log.Fatalln("Erro de comunicação com o servidor:", err)
+			log.Fatalln("Erro de comunicação com o servidor (servidor caiu):", err)
 		}
 
 		var respAuth utils.MensagemResposta
-		json.Unmarshal(buf[:n], &respAuth)
+		_ = json.Unmarshal(buf[:n], &respAuth)
 
 		if !respAuth.Sucesso {
 			fmt.Printf("\n[ERRO]: %s Tente novamente.\n\n", respAuth.Mensagem)
@@ -340,16 +413,17 @@ func main() {
 
 			payload, _ := json.Marshal(novaCarona)
 			req := utils.MensagemRequisicao{Acao: utils.AcaoPublicarCarona, Usuario: email, Payload: payload}
-			reqBytes, _ := json.Marshal(req)
-			conexao.Write(reqBytes)
-
-			n, _ := conexao.Read(buf)
-			var resp utils.MensagemResposta
-			json.Unmarshal(buf[:n], &resp)
+			resp, ok := enviarRequisicaoTCP(&conexao, *serverAddr, email, senha, req, buf)
+			if !ok {
+				continue
+			}
 			fmt.Println("\n>", resp.Mensagem)
 
 		case "2":
-			caronas := buscarCaronas(conexao, email, buf)
+			caronas, ok := buscarCaronas(&conexao, *serverAddr, email, senha, buf)
+			if !ok {
+				continue
+			}
 			fmt.Println("\n==========================================")
 			fmt.Println("           MINHAS CARONAS                 ")
 			fmt.Println("==========================================")
@@ -405,7 +479,10 @@ func main() {
 			}
 
 		case "3":
-			caronas := buscarCaronas(conexao, email, buf)
+			caronas, ok := buscarCaronas(&conexao, *serverAddr, email, senha, buf)
+			if !ok {
+				continue
+			}
 			fmt.Println("\n==========================================")
 			fmt.Println("    CONSULTAR PASSAGEIROS DA CARONA       ")
 			fmt.Println("==========================================")
@@ -433,7 +510,10 @@ func main() {
 			}
 
 			caronaEscolhida := caronas[num-1]
-			passageiros := buscarPassageirosDaCarona(conexao, email, caronaEscolhida.ID, buf)
+			passageiros, ok := buscarPassageirosDaCarona(&conexao, *serverAddr, email, senha, caronaEscolhida.ID, buf)
+			if !ok {
+				continue
+			}
 
 			fmt.Printf("\n--- Passageiros da Carona %s ---\n", caronaEscolhida.ID)
 			if len(passageiros) == 0 {
@@ -445,7 +525,10 @@ func main() {
 			}
 
 		case "4":
-			caronas := buscarCaronas(conexao, email, buf)
+			caronas, ok := buscarCaronas(&conexao, *serverAddr, email, senha, buf)
+			if !ok {
+				continue
+			}
 			fmt.Println("\n==========================================")
 			fmt.Println("           CANCELAR CARONA                ")
 			fmt.Println("==========================================")
@@ -469,6 +552,7 @@ func main() {
 			}
 
 			// Exibe detalhes completos de cada carona ativa
+			abortouPorQueda := false
 			for i, c := range ativasParaCancelar {
 				origemGeral := "Indefinida"
 				destinoGeral := "Indefinido"
@@ -479,7 +563,11 @@ func main() {
 					dataStr = c.Trechos[0].DataPartida.String()
 				}
 
-				passageiros := buscarPassageirosDaCarona(conexao, email, c.ID, buf)
+				passageiros, okP := buscarPassageirosDaCarona(&conexao, *serverAddr, email, senha, c.ID, buf)
+				if !okP {
+					abortouPorQueda = true
+					break
+				}
 
 				fmt.Printf("\n[%d] Rota: %s -> %s | Data: %s | Trechos: %d\n",
 					i+1, origemGeral, destinoGeral, dataStr, len(c.Trechos))
@@ -489,6 +577,9 @@ func main() {
 				} else {
 					fmt.Printf("    Passageiros (%d): %s\n", len(passageiros), strings.Join(passageiros, ", "))
 				}
+			}
+			if abortouPorQueda {
+				continue
 			}
 
 			fmt.Println("\n[0] Voltar ao menu")
@@ -502,12 +593,10 @@ func main() {
 			caronaEscolhida := ativasParaCancelar[num-1]
 			payload, _ := json.Marshal(map[string]interface{}{"carona_id": caronaEscolhida.ID, "confirmar": false})
 			req := utils.MensagemRequisicao{Acao: utils.AcaoCancelarCarona, Usuario: email, Payload: payload}
-			reqBytes, _ := json.Marshal(req)
-			conexao.Write(reqBytes)
-
-			n, _ := conexao.Read(buf)
-			var resp utils.MensagemResposta
-			json.Unmarshal(buf[:n], &resp)
+			resp, ok := enviarRequisicaoTCP(&conexao, *serverAddr, email, senha, req, buf)
+			if !ok {
+				continue
+			}
 
 			fmt.Println("\n>", resp.Mensagem)
 
@@ -516,11 +605,10 @@ func main() {
 				if strings.ToLower(confirmar) == "s" {
 					payloadConf, _ := json.Marshal(map[string]interface{}{"carona_id": caronaEscolhida.ID, "confirmar": true})
 					req.Payload = payloadConf
-					reqBytes, _ = json.Marshal(req)
-					conexao.Write(reqBytes)
-
-					n, _ = conexao.Read(buf)
-					json.Unmarshal(buf[:n], &resp)
+					resp, ok = enviarRequisicaoTCP(&conexao, *serverAddr, email, senha, req, buf)
+					if !ok {
+						continue
+					}
 					fmt.Println("\n>", resp.Mensagem)
 				}
 			}

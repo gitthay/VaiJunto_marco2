@@ -32,6 +32,27 @@ Cliente                                   Servidor (Empresa Local)
 - **Queda abrupta**: se a conexão cair sem aviso (crash do cliente, rede interrompida), a leitura no servidor retorna erro; o `defer` da goroutine libera a sessão do usuário da mesma forma, garantindo que o e-mail fique disponível para novo login e que nenhum arquivo fique em estado inconsistente.
 - **Mensagem malformada**: se o payload recebido não for um JSON válido, o servidor registra o erro no log e encerra a conexão daquele cliente. Os demais clientes conectados não são afetados.
 
+### 1.3 Queda do servidor com o cliente conectado (detecção e reconexão automática)
+
+Todas as ações do menu dos clientes passam pela função `enviarRequisicaoTCP` (em `motorista/mainmotorista.go` e `passageiro/mainpassageiro.go`), que **não ignora mais os erros de leitura/escrita do socket**. Antes, quando o servidor caía, o `Read` retornava `EOF` com 0 bytes e o cliente interpretava como uma lista vazia ("Você não possui reservas"). Agora:
+
+1. Se a escrita ou a leitura falhar (`EOF`, conexão resetada), o cliente fecha o socket antigo e exibe `[ALERTA DE REDE]`.
+2. Tenta abrir uma nova conexão TCP (timeout de 2s):
+   - **Servidor ainda fora do ar** → exibe `[SERVIDOR OFFLINE]` e volta ao menu, sem mostrar dados falsos/vazios.
+   - **Servidor já voltou** → reenvia `AUTENTICAR` automaticamente com o e-mail/senha da sessão, reenvia a requisição original e exibe `[RECONECTADO]`, sem precisar reiniciar o cliente.
+
+```
+Cliente                                   Servidor (reiniciado)
+   |---- LISTAR_RESERVAS (socket antigo) ->X  (EOF: servidor caiu)
+   |   [ALERTA DE REDE]
+   |------------- TCP connect -------------->|
+   |------ AUTENTICAR {email, senha} ------->|
+   |<----------- MensagemResposta -----------|
+   |---- LISTAR_RESERVAS (reenvio) --------->|
+   |<----------- MensagemResposta -----------|
+   |   [RECONECTADO]
+```
+
 ## 2. Envelope das mensagens
 
 Toda requisição do cliente para o servidor segue o formato:
@@ -240,17 +261,27 @@ Confirma a reserva de um itinerário completo (um ou mais trechos, locais ou int
 | `trechos` | array de `ArestaTrecho` | Trechos que compõem o itinerário desejado (incluindo `empresa_id` e `servidor_url`) |
 | `preco_total` | float | Soma dos preços dos trechos |
 
+Ao confirmar, **cada servidor participante** grava a reserva no seu próprio `reservas.json`: trechos próprios com detalhes completos e trechos de outros servidores apenas com a referência `carona_id`, `empresa_id` e `servidor_url`.
+
 ---
 
 ### 3.8 `LISTAR_RESERVAS`
 
-Lista as reservas confirmadas do passageiro autenticado salvas no `reservas.json` de sua empresa.
+Lista as reservas confirmadas do passageiro autenticado. Antes de responder, o servidor:
+1. Executa a **reconciliação pós-queda** (`GET /api/reservas/status` nos participantes), removendo reservas que foram canceladas em outro servidor enquanto este estava offline e devolvendo `+1` assento.
+2. Para cada trecho de outro servidor, envia apenas `reserva_id` + `carona_id` em `GET /api/caronas/detalhe` e preenche origem, destino, motorista, horários e preço.
+   - Se o servidor dono do trecho estiver offline, o trecho volta com `"servidor_offline": true` e o cliente exibe `[SERVIDOR OFFLINE - Detalhes indisponíveis no momento]`.
+
+**Exemplo — trecho remoto offline no payload de resposta**
+```json
+{ "carona_id": "CAR-B-7", "empresa_id": "empresaB", "servidor_url": "http://192.168.1.11:9082", "servidor_offline": true }
+```
 
 ---
 
 ### 3.9 `CANCELAR_RESERVA`
 
-Cancela uma reserva do passageiro, devolve os assentos locais e aciona `POST /api/reservas/liberar` nos demais servidores do consórcio que possuíam trechos naquele itinerário.
+Cancela uma reserva do passageiro: remove a reserva do `reservas.json` local, devolve `+1` assento nos trechos locais e aciona `POST /api/reservas/liberar` nos demais servidores participantes (e no coordenador), que também removem sua cópia da reserva e devolvem `+1` assento. Se algum participante estiver offline nesse momento, ele se corrige sozinho ao voltar, via reconciliação (`GET /api/reservas/status`).
 
 ## 4. Log de auditoria
 

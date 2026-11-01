@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"vaiJunto/utils"
 )
@@ -23,19 +24,90 @@ func lerTexto(rotulo string) string {
 	return strings.TrimSpace(texto)
 }
 
-// função auxiliar para consultar as reservas do cliente
-func buscarReservas(conexao net.Conn, email string, buf []byte) []utils.Reserva {
-	req := utils.MensagemRequisicao{Acao: utils.AcaoListarReservas, Usuario: email}
+// enviarRequisicaoTCP envia uma requisição ao servidor e detecta quedas de conexão (EOF / reset).
+// Se o servidor tiver caído, avisa claramente ao usuário e tenta reconectar automaticamente
+// caso o servidor já tenha voltado ao ar.
+func enviarRequisicaoTCP(conexao *net.Conn, serverAddr, email, senha string, req utils.MensagemRequisicao, buf []byte) (utils.MensagemResposta, bool) {
 	reqBytes, _ := json.Marshal(req)
-	conexao.Write(reqBytes)
 
-	n, _ := conexao.Read(buf)
+	if *conexao != nil {
+		_, errW := (*conexao).Write(reqBytes)
+		if errW == nil {
+			n, errR := (*conexao).Read(buf)
+			if errR == nil && n > 0 {
+				var resp utils.MensagemResposta
+				_ = json.Unmarshal(buf[:n], &resp)
+				return resp, true
+			}
+		}
+		_ = (*conexao).Close()
+		*conexao = nil
+	}
+
+	fmt.Printf("\n[ALERTA DE REDE]: A conexão com o servidor (%s) foi perdida! Tentando reconectar...\n", serverAddr)
+
+	novaConn, errDial := net.DialTimeout("tcp", serverAddr, 2*time.Second)
+	if errDial != nil {
+		fmt.Printf("[SERVIDOR OFFLINE]: O servidor (%s) caiu e continua fora do ar no momento. Aguarde ele voltar e tente novamente.\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+
+	// Servidor voltou: reautentica automaticamente a sessão do passageiro
+	payloadAuth, _ := json.Marshal(map[string]interface{}{
+		"email": email,
+		"senha": senha,
+		"tipo":  utils.TipoPassageiro,
+	})
+	reqAuth := utils.MensagemRequisicao{
+		Acao:    utils.AcaoAutenticar,
+		Usuario: email,
+		Payload: payloadAuth,
+	}
+	reqAuthBytes, _ := json.Marshal(reqAuth)
+	if _, err := novaConn.Write(reqAuthBytes); err != nil {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: Falha ao restabelecer sessão com o servidor (%s).\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+	nAuth, errAuth := novaConn.Read(buf)
+	if errAuth != nil || nAuth == 0 {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: O servidor (%s) não respondeu à reconexão.\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+
+	// Reenvia a requisição original após reconectar com sucesso
+	if _, err := novaConn.Write(reqBytes); err != nil {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: Perda de conexão ao reenviar requisição para (%s).\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+	n, err := novaConn.Read(buf)
+	if err != nil || n == 0 {
+		_ = novaConn.Close()
+		fmt.Printf("[SERVIDOR OFFLINE]: Sem resposta do servidor (%s).\n", serverAddr)
+		return utils.MensagemResposta{}, false
+	}
+
+	*conexao = novaConn
+	fmt.Printf("[RECONECTADO]: Conexão restabelecida automaticamente com o servidor (%s)!\n", serverAddr)
+
 	var resp utils.MensagemResposta
-	json.Unmarshal(buf[:n], &resp)
+	_ = json.Unmarshal(buf[:n], &resp)
+	return resp, true
+}
+
+// função auxiliar para consultar as reservas do cliente
+func buscarReservas(conexao *net.Conn, serverAddr, email, senha string, buf []byte) ([]utils.Reserva, bool) {
+	req := utils.MensagemRequisicao{Acao: utils.AcaoListarReservas, Usuario: email}
+	resp, ok := enviarRequisicaoTCP(conexao, serverAddr, email, senha, req, buf)
+	if !ok {
+		return nil, false
+	}
 
 	var reservas []utils.Reserva
-	json.Unmarshal(resp.Payload, &reservas)
-	return reservas
+	_ = json.Unmarshal(resp.Payload, &reservas)
+	return reservas, true
 }
 
 // exibirDetalhesReserva imprime a reserva e cada um de seus trechos, indicando se algum servidor participante está offline
@@ -89,7 +161,11 @@ func main() {
 	if err != nil {
 		log.Fatalln("Erro ao conectar ao servidor:", err)
 	}
-	defer conexao.Close()
+	defer func() {
+		if conexao != nil {
+			_ = conexao.Close()
+		}
+	}()
 
 	buf := make([]byte, 16384)
 
@@ -98,10 +174,10 @@ func main() {
 	fmt.Println("==========================================")
 
 	//AUTENTICAÇÃO
-	var email string
+	var email, senha string
 	for {
 		email = lerTexto("Digite seu Email: ")
-		senha := lerTexto("Digite sua Senha: ")
+		senha = lerTexto("Digite sua Senha: ")
 
 		payloadAuth, _ := json.Marshal(map[string]interface{}{
 			"email": email,
@@ -115,15 +191,15 @@ func main() {
 			Payload: payloadAuth,
 		}
 		reqAuthBytes, _ := json.Marshal(reqAuth)
-		conexao.Write(reqAuthBytes)
+		_, _ = conexao.Write(reqAuthBytes)
 
 		n, err := conexao.Read(buf)
 		if err != nil {
-			log.Fatalln("Erro de comunicação com o servidor:", err)
+			log.Fatalln("Erro de comunicação com o servidor (servidor caiu):", err)
 		}
 
 		var respAuth utils.MensagemResposta
-		json.Unmarshal(buf[:n], &respAuth)
+		_ = json.Unmarshal(buf[:n], &respAuth)
 
 		if !respAuth.Sucesso {
 			fmt.Printf("\n[ERRO]: %s Tente novamente.\n\n", respAuth.Mensagem)
@@ -198,15 +274,13 @@ func main() {
 
 			payload, _ := json.Marshal(filtro)
 			req := utils.MensagemRequisicao{Acao: utils.AcaoBuscarItinerario, Usuario: email, Payload: payload}
-			reqBytes, _ := json.Marshal(req)
-			conexao.Write(reqBytes)
-
-			n, _ := conexao.Read(buf)
-			var resp utils.MensagemResposta
-			json.Unmarshal(buf[:n], &resp)
+			resp, ok := enviarRequisicaoTCP(&conexao, *serverAddr, email, senha, req, buf)
+			if !ok {
+				continue
+			}
 
 			var itinerariosEncontrados []utils.Itinerario
-			json.Unmarshal(resp.Payload, &itinerariosEncontrados)
+			_ = json.Unmarshal(resp.Payload, &itinerariosEncontrados)
 
 			fmt.Println("\n==========================================")
 			fmt.Printf("   %s\n", resp.Mensagem)
@@ -255,17 +329,18 @@ func main() {
 			payloadReserva, _ := json.Marshal(itinerarioEscolhido)
 
 			reqReserva := utils.MensagemRequisicao{Acao: utils.AcaoReservarTrecho, Usuario: email, Payload: payloadReserva}
-			reqReservaBytes, _ := json.Marshal(reqReserva)
-			conexao.Write(reqReservaBytes)
-
-			n, _ = conexao.Read(buf)
-			var respReserva utils.MensagemResposta
-			json.Unmarshal(buf[:n], &respReserva)
+			respReserva, ok := enviarRequisicaoTCP(&conexao, *serverAddr, email, senha, reqReserva, buf)
+			if !ok {
+				continue
+			}
 
 			fmt.Println("\n>", respReserva.Mensagem)
 
 		case "2":
-			reservas := buscarReservas(conexao, email, buf)
+			reservas, ok := buscarReservas(&conexao, *serverAddr, email, senha, buf)
+			if !ok {
+				continue
+			}
 			fmt.Println("\n--- MINHAS RESERVAS (CONSULTA EM TEMPO REAL AO CONSÓRCIO) ---")
 			if len(reservas) == 0 {
 				fmt.Println("Você não possui reservas ativas.")
@@ -276,7 +351,10 @@ func main() {
 			}
 
 		case "3":
-			reservas := buscarReservas(conexao, email, buf)
+			reservas, ok := buscarReservas(&conexao, *serverAddr, email, senha, buf)
+			if !ok {
+				continue
+			}
 			fmt.Println("\n==========================================")
 			fmt.Println("           CANCELAR RESERVA               ")
 			fmt.Println("==========================================")
@@ -311,12 +389,10 @@ func main() {
 			payload, _ := json.Marshal(map[string]string{"reserva_id": reservaEscolhida.ID})
 
 			req := utils.MensagemRequisicao{Acao: utils.AcaoCancelarReserva, Usuario: email, Payload: payload}
-			reqBytes, _ := json.Marshal(req)
-			conexao.Write(reqBytes)
-
-			n, _ := conexao.Read(buf)
-			var resp utils.MensagemResposta
-			json.Unmarshal(buf[:n], &resp)
+			resp, ok := enviarRequisicaoTCP(&conexao, *serverAddr, email, senha, req, buf)
+			if !ok {
+				continue
+			}
 
 			fmt.Println("\n>", resp.Mensagem)
 

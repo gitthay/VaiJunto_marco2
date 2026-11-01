@@ -71,10 +71,30 @@ Retorna apenas as arestas de trechos ativos e com assentos disponíveis (`assent
 
 ---
 
-### 2.3 `GET /api/caronas/detalhe?carona_id=CAR-...&origem=...&destino=...`
-Como o `reservas.json` é descentralizado (o servidor `A` guarda apenas os detalhes de `A` e somente a referência `carona_id` + `servidor_url` do trecho de `B`, e vice-versa), sempre que o passageiro solicita a visualização de suas reservas, o servidor faz uma requisição `GET /api/caronas/detalhe` aos demais servidores participantes.
-* Se o servidor participante estiver **ONLINE**, retorna `200 OK` com `motorista_id`, `horario_partida`, `horario_chegada` e `preco`.
-* Se o servidor participante estiver **OFFLINE**, o cliente exibe `[SERVIDOR OFFLINE - Detalhes indisponíveis no momento]`.
+### 2.3 `GET /api/caronas/detalhe?reserva_id=RES-...&carona_id=CAR-...`
+Como o `reservas.json` é descentralizado (o servidor `A` guarda apenas os detalhes de `A` e, para o trecho de `B`, somente `carona_id`, `empresa_id` e `servidor_url` — sem origem/destino, já que o ID da carona é único), sempre que o passageiro solicita a visualização de suas reservas, o servidor envia apenas **`reserva_id` + `carona_id`** ao servidor dono do trecho. Este localiza o trecho na sua própria cópia da reserva/carona e devolve todos os dados.
+* Se o servidor participante estiver **ONLINE**, retorna `200 OK` com `origem`, `destino`, `motorista_id`, `horario_partida`, `horario_chegada` e `preco`.
+* Se estiver **OFFLINE**, o trecho é marcado com `servidor_offline: true` e o cliente exibe `[SERVIDOR OFFLINE - Detalhes indisponíveis no momento]`.
+
+* **Exemplo — referência guardada no `reservas.json` da Empresa A para o trecho da Empresa B**:
+```json
+{ "carona_id": "CAR-B-7", "empresa_id": "empresaB", "servidor_url": "http://192.168.1.11:9082" }
+```
+
+* **Resposta (`200 OK`)**:
+```json
+{
+  "carona_id": "CAR-B-7",
+  "motorista_id": "joao@email.com",
+  "empresa_id": "empresaB",
+  "servidor_url": "http://192.168.1.11:9082",
+  "origem": "Feira de Santana",
+  "destino": "Montes Claros",
+  "horario_partida": "2026-11-25T11:00:00-03:00",
+  "horario_chegada": "2026-11-25T16:00:00-03:00",
+  "preco": 110
+}
+```
 
 ---
 
@@ -121,3 +141,50 @@ Usado na **reconciliação pós-queda (`sincronizarReservasComPeers`)**. Quando 
 
 ### 2.10 `POST /api/reservas/liberar` e `POST /api/caronas/cancelada`
 Chamados via REST quando um passageiro cancela sua reserva confirmada ou quando um motorista cancela sua carona, removendo a reserva do `reservas.json` e devolvendo `+1` assento (`AssentosLivre++`) no `caronas.json` de cada servidor participante de forma idempotente.
+
+---
+
+## 3. Diagrama de Sequência — Reserva Inter-Empresas (2PC Descentralizado)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor P as Passageiro (Cliente TCP)
+    participant A as Servidor Empresa A (Coordenador)
+    participant B as Servidor Empresa B (Participante)
+
+    Note over P,B: 1. Busca federada
+    P->>A: TCP BUSCAR_ITINERARIO
+    A->>B: GET /api/caronas?dia&mes&ano
+    B-->>A: 200 OK (trechos de B)
+    A-->>P: Itinerário A + B
+
+    Note over P,B: 2. Fase 1 — PREPARE (Lamport)
+    P->>A: TCP RESERVAR_TRECHO
+    A->>A: ExecutarPrepareLocal (bloqueio em RAM)
+    A->>B: POST /api/2pc/prepare
+    B-->>A: 200 OK PREPARED
+
+    Note over P,B: 3. Fase 2 — COMMIT descentralizado
+    A->>A: ExecutarCommitLocal + grava reservas.json de A (detalhes de A, referência de B)
+    A->>B: POST /api/2pc/commit (reserva + itinerário)
+    B->>B: Grava reservas.json de B (detalhes de B, referência de A)
+    B-->>A: 200 OK COMMITTED
+    A-->>P: Reserva confirmada
+
+    Note over P,B: 4. Consulta de detalhes sob demanda
+    P->>A: TCP LISTAR_RESERVAS
+    A->>B: GET /api/caronas/detalhe?reserva_id&carona_id
+    alt B ONLINE
+        B-->>A: 200 OK (origem, destino, motorista, horários, preço)
+    else B OFFLINE
+        A->>A: marca trecho servidor_offline = true
+    end
+    A-->>P: Reservas (com aviso de servidor offline, se for o caso)
+
+    Note over P,B: 5. Reconciliação pós-queda
+    B->>B: B estava offline e volta
+    B->>A: GET /api/reservas/status?reserva_id
+    A-->>B: existe = false (cancelada durante a queda)
+    B->>B: Remove reserva local e devolve +1 assento
+```
