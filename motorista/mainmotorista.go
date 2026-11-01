@@ -33,10 +33,9 @@ func enviarRequisicaoTCP(conexao *net.Conn, serverAddr, email, senha string, req
 	if *conexao != nil {
 		_, errW := (*conexao).Write(reqBytes)
 		if errW == nil {
-			n, errR := (*conexao).Read(buf)
-			if errR == nil && n > 0 {
-				var resp utils.MensagemResposta
-				_ = json.Unmarshal(buf[:n], &resp)
+			// json.Decoder lê do socket até completar o objeto JSON (respostas grandes chegam fragmentadas)
+			var resp utils.MensagemResposta
+			if errR := json.NewDecoder(*conexao).Decode(&resp); errR == nil {
 				return resp, true
 			}
 		}
@@ -69,8 +68,8 @@ func enviarRequisicaoTCP(conexao *net.Conn, serverAddr, email, senha string, req
 		fmt.Printf("[SERVIDOR OFFLINE]: Falha ao restabelecer sessão com o servidor (%s).\n", serverAddr)
 		return utils.MensagemResposta{}, false
 	}
-	nAuth, errAuth := novaConn.Read(buf)
-	if errAuth != nil || nAuth == 0 {
+	var respAuthReconexao utils.MensagemResposta
+	if errAuth := json.NewDecoder(novaConn).Decode(&respAuthReconexao); errAuth != nil {
 		_ = novaConn.Close()
 		fmt.Printf("[SERVIDOR OFFLINE]: O servidor (%s) não respondeu à reconexão.\n", serverAddr)
 		return utils.MensagemResposta{}, false
@@ -82,8 +81,8 @@ func enviarRequisicaoTCP(conexao *net.Conn, serverAddr, email, senha string, req
 		fmt.Printf("[SERVIDOR OFFLINE]: Perda de conexão ao reenviar requisição para (%s).\n", serverAddr)
 		return utils.MensagemResposta{}, false
 	}
-	n, err := novaConn.Read(buf)
-	if err != nil || n == 0 {
+	var resp utils.MensagemResposta
+	if err := json.NewDecoder(novaConn).Decode(&resp); err != nil {
 		_ = novaConn.Close()
 		fmt.Printf("[SERVIDOR OFFLINE]: Sem resposta do servidor (%s).\n", serverAddr)
 		return utils.MensagemResposta{}, false
@@ -92,8 +91,6 @@ func enviarRequisicaoTCP(conexao *net.Conn, serverAddr, email, senha string, req
 	*conexao = novaConn
 	fmt.Printf("[RECONECTADO]: Conexão restabelecida automaticamente com o servidor (%s)!\n", serverAddr)
 
-	var resp utils.MensagemResposta
-	_ = json.Unmarshal(buf[:n], &resp)
 	return resp, true
 }
 
@@ -165,13 +162,10 @@ func main() {
 		reqAuthBytes, _ := json.Marshal(reqAuth)
 		_, _ = conexao.Write(reqAuthBytes)
 
-		n, err := conexao.Read(buf)
-		if err != nil {
+		var respAuth utils.MensagemResposta
+		if err := json.NewDecoder(conexao).Decode(&respAuth); err != nil {
 			log.Fatalln("Erro de comunicação com o servidor (servidor caiu):", err)
 		}
-
-		var respAuth utils.MensagemResposta
-		_ = json.Unmarshal(buf[:n], &respAuth)
 
 		if !respAuth.Sucesso {
 			fmt.Printf("\n[ERRO]: %s Tente novamente.\n\n", respAuth.Mensagem)

@@ -31,14 +31,9 @@ func enviarReqSimulador(conn net.Conn, acao utils.TipoAcao, usuario string, payl
 		return utils.MensagemResposta{}, err
 	}
 
-	buf := make([]byte, 32768)
-	n, err := conn.Read(buf)
-	if err != nil {
-		return utils.MensagemResposta{}, err
-	}
-
+	// Lê até completar o objeto JSON (respostas grandes chegam fragmentadas em vários pacotes TCP)
 	var resp utils.MensagemResposta
-	err = json.Unmarshal(buf[:n], &resp)
+	err := json.NewDecoder(conn).Decode(&resp)
 	return resp, err
 }
 
@@ -161,6 +156,7 @@ func main() {
 			inicioOp := time.Now()
 			conn, err := net.DialTimeout("tcp", enderecoTCP, 8*time.Second)
 			if err != nil {
+				fmt.Printf("[ERRO TCP DIAL] Cliente %d em %s: %v\n", id, enderecoTCP, err)
 				atomic.AddInt64(&errosConexao, 1)
 				return
 			}
@@ -175,6 +171,7 @@ func main() {
 				"tipo":  utils.TipoPassageiro,
 			})
 			if err != nil || !respAuth.Sucesso {
+				fmt.Printf("[ERRO AUTH] Cliente %d: err=%v, resp=%+v\n", id, err, respAuth)
 				atomic.AddInt64(&errosConexao, 1)
 				return
 			}
@@ -186,6 +183,7 @@ func main() {
 				"data":    dataViagem,
 			})
 			if err != nil || !respBusca.Sucesso {
+				fmt.Printf("[ERRO BUSCA] Cliente %d: err=%v, resp=%+v\n", id, err, respBusca)
 				atomic.AddInt64(&errosConexao, 1)
 				return
 			}
@@ -206,6 +204,10 @@ func main() {
 			muLatencia.Lock()
 			latencias = append(latencias, duracao)
 			muLatencia.Unlock()
+
+			if err != nil {
+				fmt.Printf("[ERRO RESERVA 2PC] Cliente %d: %v\n", id, err)
+			}
 
 			if err == nil && respRes.Sucesso {
 				atomic.AddInt64(&reservasSucesso, 1)

@@ -289,26 +289,28 @@ func gerenciarConexao(conexao net.Conn) {
 		}
 	}()
 
-	buf := make([]byte, 16384)
+	// TCP é um fluxo de bytes: uma mensagem grande pode chegar fragmentada em vários pacotes
+	// (principalmente entre máquinas diferentes, com MTU ~1500 bytes). O json.Decoder continua
+	// lendo do socket até completar cada objeto JSON, em vez de depender de um único Read().
+	decodificador := json.NewDecoder(conexao)
+	codificador := json.NewEncoder(conexao)
 	canalResposta := make(chan ResultadoRequisicao, 1)
 
 	for {
-		n, err := conexao.Read(buf)
-		if err != nil {
+		var req utils.MensagemRequisicao
+		if err := decodificador.Decode(&req); err != nil {
 			if err == io.EOF {
 				fmt.Println("Cliente desconectou.")
 				utils.RegistrarLog("[DESCONEXAO] Cliente %s desconectou normalmente.", clienteAddr)
 				return
 			}
+			if _, ehSintaxe := err.(*json.SyntaxError); ehSintaxe {
+				log.Println("JSON inválido:", err)
+				utils.RegistrarLog("[ERRO JSON] Cliente %s enviou JSON malformado: %v", clienteAddr, err)
+				return
+			}
 			log.Println("Erro ao ler da conexão:", err)
 			utils.RegistrarLog("[ERRO CONEXAO] Erro na leitura do cliente %s: %v", clienteAddr, err)
-			return
-		}
-
-		var req utils.MensagemRequisicao
-		if err := json.Unmarshal(buf[:n], &req); err != nil {
-			log.Println("JSON inválido:", err)
-			utils.RegistrarLog("[ERRO JSON] Cliente %s enviou JSON malformado: %s", clienteAddr, string(buf[:n]))
 			return
 		}
 
@@ -327,8 +329,8 @@ func gerenciarConexao(conexao net.Conn) {
 			usuarioLogadoNestaConexao = resultado.NovoUsuarioLogado
 		}
 
-		respBytes, _ := json.Marshal(resultado.Resposta)
-		_, _ = conexao.Write(respBytes)
+		// Encode escreve o JSON completo (seguido de '\n') no socket
+		_ = codificador.Encode(resultado.Resposta)
 		utils.RegistrarLog("[RESPOSTA] Para: %s (Usuario: %s) | Acao: %s | Sucesso: %t | Msg: %s | Payload: %s",
 			clienteAddr, req.Usuario, req.Acao, resultado.Resposta.Sucesso, resultado.Resposta.Mensagem, string(resultado.Resposta.Payload))
 	}
