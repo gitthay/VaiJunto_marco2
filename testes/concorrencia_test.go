@@ -558,7 +558,7 @@ func Test7_ConsultaPassageirosECancelamentoEntreEmpresasViaREST(t *testing.T) {
 	// Simula o servidor da Empresa B (onde está o passageiro "maria_empB@email.com" que comprou CAR-A-REST + CAR-C-OUTRA)
 	var muB sync.Mutex
 	reservaAtivaNaEmpresaB := true
-	 liberouOutroTrechoNaEmpresaC := false
+	liberouOutroTrechoNaEmpresaC := false
 
 	srvC := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/reservas/liberar" {
@@ -630,4 +630,192 @@ func Test7_ConsultaPassageirosECancelamentoEntreEmpresasViaREST(t *testing.T) {
 	}
 
 	t.Log("[OK TESTE 7]: Consulta de passageiros e cancelamento de carona em cascata entre empresas 100% via REST validados!")
+}
+
+// ============================================================================
+// TESTE 8: Armazenamento Descentralizado em reservas.json, Detalhes Sob Demanda
+// (Online/Offline) e Reconciliação de Assentos (+1) Após Queda de Servidor
+// ============================================================================
+func Test8_ArmazenamentoDescentralizadoEReconciliacaoPosQueda(t *testing.T) {
+	cleanup := configurarAmbienteTesteIsolado(t, "empresaA")
+	defer cleanup()
+
+	srvA := httptest.NewServer(utils.ConfigurarRotasConsorcio())
+	defer srvA.Close()
+	utils.ServidorAtualURL = srvA.URL
+
+	tBase := time.Date(2026, 11, 25, 8, 0, 0, 0, time.Local)
+	caronaA := utils.Carona{
+		ID:          "CAR-A-DESC",
+		MotoristaID: "motA@email.com",
+		AssentosTot: 2,
+		Ativa:       true,
+		Trechos: []utils.Trecho{{
+			Origem:         "Salvador",
+			Destino:        "Feira de Santana",
+			DataPartida:    utils.NovaData(25, 11, 2026),
+			HorarioPartida: tBase,
+			HorarioChegada: tBase.Add(2 * time.Hour),
+			Preco:          40.0,
+			AssentosLivre:  2,
+		}},
+	}
+	_ = utils.SalvarCarona(caronaA)
+
+	var muB sync.Mutex
+	bOnline := true
+	reservaExisteEmB := true
+	var reservaRecebidaNoCommitB utils.Reserva
+
+	muxB := http.NewServeMux()
+	muxB.HandleFunc("/api/2pc/prepare", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(utils.Resposta2PC{Sucesso: true, Estado: utils.EstadoPrepared, Lamport: 10})
+	})
+	muxB.HandleFunc("/api/2pc/commit", func(w http.ResponseWriter, r *http.Request) {
+		var req utils.Requisicao2PCDecisao
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		muB.Lock()
+		reservaRecebidaNoCommitB = utils.Reserva{
+			ID:             req.ReservaID,
+			PassageiroID:   req.PassageiroID,
+			CoordenadorURL: req.CoordenadorURL,
+			Itinerario:     req.Itinerario,
+			ValorTotal:     req.ValorTotal,
+		}
+		muB.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(utils.Resposta2PC{Sucesso: true, Estado: utils.EstadoCommitted, Lamport: 11})
+	})
+	muxB.HandleFunc("/api/caronas/detalhe", func(w http.ResponseWriter, r *http.Request) {
+		muB.Lock()
+		on := bOnline
+		muB.Unlock()
+		if !on {
+			http.Error(w, "offline", http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(utils.ArestaTrecho{
+			CaronaID:       "CAR-B-DESC",
+			MotoristaID:    "motB@email.com",
+			EmpresaID:      "empresaB",
+			Origem:         "Feira de Santana",
+			Destino:        "Montes Claros",
+			HorarioPartida: tBase.Add(3 * time.Hour),
+			HorarioChegada: tBase.Add(8 * time.Hour),
+			Preco:          110.0,
+		})
+	})
+	muxB.HandleFunc("/api/reservas/status", func(w http.ResponseWriter, r *http.Request) {
+		muB.Lock()
+		existe := reservaExisteEmB
+		muB.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"reserva_id": r.URL.Query().Get("reserva_id"),
+			"existe":     existe,
+			"empresa_id": "empresaB",
+		})
+	})
+
+	srvB := httptest.NewServer(muxB)
+	defer srvB.Close()
+	utils.ConfigurarPeers(srvB.URL)
+
+	itin := utils.Itinerario{
+		PrecoTotal: 150.0,
+		Trechos: []utils.ArestaTrecho{
+			{
+				CaronaID:       "CAR-A-DESC",
+				MotoristaID:    "motA@email.com",
+				EmpresaID:      "empresaA",
+				ServidorURL:    srvA.URL,
+				Origem:         "Salvador",
+				Destino:        "Feira de Santana",
+				HorarioPartida: tBase,
+				HorarioChegada: tBase.Add(2 * time.Hour),
+				Preco:          40.0,
+			},
+			{
+				CaronaID:       "CAR-B-DESC",
+				MotoristaID:    "motB@email.com",
+				EmpresaID:      "empresaB",
+				ServidorURL:    srvB.URL,
+				Origem:         "Feira de Santana",
+				Destino:        "Montes Claros",
+				HorarioPartida: tBase.Add(3 * time.Hour),
+				HorarioChegada: tBase.Add(8 * time.Hour),
+				Preco:          110.0,
+			},
+		},
+	}
+
+	res, err := utils.CoordenarReserva2PC("cliente@teste.com", itin)
+	if err != nil {
+		t.Fatalf("Erro ao reservar itinerário: %v", err)
+	}
+
+	// 1. Verifica descentralização no reservas.json da Empresa A:
+	// O trecho 0 (empresaA) deve ter MotoristaID="motA@email.com", mas o trecho 1 (empresaB) deve guardar APENAS referência (MotoristaID=="")!
+	reservasDiscoA, _ := utils.CarregarReservas()
+	if len(reservasDiscoA) != 1 {
+		t.Fatalf("Esperava 1 reserva no reservas.json da Empresa A, obteve %d", len(reservasDiscoA))
+	}
+	if reservasDiscoA[0].Itinerario[0].MotoristaID != "motA@email.com" {
+		t.Fatalf("Trecho local da Empresa A deveria salvar detalhes completos no reservas.json da Empresa A")
+	}
+	if reservasDiscoA[0].Itinerario[1].MotoristaID != "" || reservasDiscoA[0].Itinerario[1].Preco != 0 ||
+		reservasDiscoA[0].Itinerario[1].Origem != "" || reservasDiscoA[0].Itinerario[1].Destino != "" {
+		t.Fatalf("Trecho remoto da Empresa B NÃO deveria salvar detalhes nem origem/destino no reservas.json da Empresa A, apenas referência (carona_id, empresa_id, servidor_url)! Obteve: %+v",
+			reservasDiscoA[0].Itinerario[1])
+	}
+
+	// E verifica que a Empresa B também recebeu a reserva no commit para salvar em seu próprio reservas.json
+	muB.Lock()
+	idRecebidoEmB := reservaRecebidaNoCommitB.ID
+	muB.Unlock()
+	if idRecebidoEmB != res.ID {
+		t.Fatalf("Empresa B deveria ter recebido a reserva %s durante o 2PC COMMIT, mas recebeu %s", res.ID, idRecebidoEmB)
+	}
+
+	// 2. Consulta detalhes com Empresa B ONLINE: deve preencher MotoristaID="motB@email.com" via GET /api/caronas/detalhe
+	listaOnline, _ := utils.ListarReservasPassageiro("cliente@teste.com")
+	if len(listaOnline) != 1 || listaOnline[0].Itinerario[1].ServidorOffline || listaOnline[0].Itinerario[1].MotoristaID != "motB@email.com" {
+		t.Fatalf("Com Empresa B ONLINE, deveria buscar via REST os detalhes de B, mas obteve: %+v", listaOnline[0].Itinerario[1])
+	}
+
+	// 3. Simula Empresa B OFFLINE ao pedir detalhes: deve sinalizar ServidorOffline=true
+	muB.Lock()
+	bOnline = false
+	muB.Unlock()
+	listaOffline, _ := utils.ListarReservasPassageiro("cliente@teste.com")
+	if !listaOffline[0].Itinerario[1].ServidorOffline {
+		t.Fatalf("Com Empresa B OFFLINE, deveria marcar ServidorOffline=true no trecho de B!")
+	}
+
+	// 4. Simula reconciliação pós-queda (+1 assento):
+	// Enquanto um servidor estava derrubado, a reserva foi excluída na Empresa B (reservaExisteEmB = false).
+	// Retrocede DataCriacao em 3s para simular reserva já consolidada antes da queda.
+	reservasDiscoA[0].DataCriacao = time.Now().Add(-3 * time.Second)
+	bBytes, _ := json.MarshalIndent(reservasDiscoA, "", "  ")
+	_ = os.WriteFile(utils.ArquivoReservas, bBytes, 0644)
+
+	muB.Lock()
+	bOnline = true
+	reservaExisteEmB = false // Reserva foi excluída enquanto A estava fora!
+	muB.Unlock()
+
+	// Quando A consulta/sincroniza com os peers, deve remover a reserva e devolver +1 assento (de 1 para 2)!
+	listaAposReconciliacao, _ := utils.ListarReservasPassageiro("cliente@teste.com")
+	if len(listaAposReconciliacao) != 0 {
+		t.Fatalf("Reserva excluída no parceiro durante queda deveria ter sido removida na reconciliação, mas restaram %d", len(listaAposReconciliacao))
+	}
+	caronasAposReconciliacao, _ := utils.CarregarCaronas()
+	if caronasAposReconciliacao[0].Trechos[0].AssentosLivre != 2 {
+		t.Fatalf("Assento na Empresa A deveria ter sido atualizado com +1 (voltando para 2), mas ficou em %d",
+			caronasAposReconciliacao[0].Trechos[0].AssentosLivre)
+	}
+
+	t.Log("[OK TESTE 8]: Armazenamento descentralizado em reservas.json, detalhes sob demanda (online/offline) e reconciliação de +1 assento pós-queda validados!")
 }

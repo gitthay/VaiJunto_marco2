@@ -38,6 +38,47 @@ func buscarReservas(conexao net.Conn, email string, buf []byte) []utils.Reserva 
 	return reservas
 }
 
+// exibirDetalhesReserva imprime a reserva e cada um de seus trechos, indicando se algum servidor participante está offline
+func exibirDetalhesReserva(indice int, r utils.Reserva) {
+	origemGeral := "[Servidor Offline]"
+	destinoGeral := "[Servidor Offline]"
+	dataHoraStr := "Consultando servidor..."
+
+	if len(r.Itinerario) > 0 {
+		if r.Itinerario[0].Origem != "" {
+			origemGeral = r.Itinerario[0].Origem
+		}
+		if r.Itinerario[len(r.Itinerario)-1].Destino != "" {
+			destinoGeral = r.Itinerario[len(r.Itinerario)-1].Destino
+		}
+		if !r.Itinerario[0].HorarioPartida.IsZero() && !r.Itinerario[0].ServidorOffline {
+			dataHoraStr = fmt.Sprintf("%s às %s",
+				r.Itinerario[0].HorarioPartida.Format("02/01/2006"),
+				r.Itinerario[0].HorarioPartida.Format("15:04"))
+		} else if r.Itinerario[0].ServidorOffline {
+			dataHoraStr = "[Servidor do 1º trecho OFFLINE]"
+		}
+	}
+
+	fmt.Printf("\n[%d] ID Reserva: %s | Rota: %s -> %s\n", indice, r.ID, origemGeral, destinoGeral)
+	fmt.Printf("    Partida: %s | Valor Total: R$ %.2f | Trechos: %d\n", dataHoraStr, r.ValorTotal, len(r.Itinerario))
+
+	for j, t := range r.Itinerario {
+		emp := t.EmpresaID
+		if emp == "" {
+			emp = "local"
+		}
+		if t.ServidorOffline {
+			fmt.Printf("      Trecho %d [%s]: (Carona ID: %s | Servidor: %s) -> [SERVIDOR OFFLINE - Detalhes indisponíveis no momento]\n",
+				j+1, emp, t.CaronaID, t.ServidorURL)
+		} else {
+			fmt.Printf("      Trecho %d [%s]: %s -> %s (Carona ID: %s | Motorista: %s | Partida: %s | Chegada: %s | R$ %.2f)\n",
+				j+1, emp, t.Origem, t.Destino, t.CaronaID, t.MotoristaID,
+				t.HorarioPartida.Format("15:04"), t.HorarioChegada.Format("15:04"), t.Preco)
+		}
+	}
+}
+
 func main() {
 	// Flag para aceitar IP dinâmico na execução do terminal
 	serverAddr := flag.String("server", "localhost:8080", "Endereço do servidor TCP (ex: 192.168.1.15:8080)")
@@ -50,13 +91,13 @@ func main() {
 	}
 	defer conexao.Close()
 
-	buf := make([]byte, 8192)
+	buf := make([]byte, 16384)
 
 	fmt.Println("==========================================")
 	fmt.Println("        VAIJUNTO - PASSAGEIRO             ")
 	fmt.Println("==========================================")
 
-	//AUTENTICAÇÃO 
+	//AUTENTICAÇÃO
 	var email string
 	for {
 		email = lerTexto("Digite seu Email: ")
@@ -179,8 +220,12 @@ func main() {
 			for i, itin := range itinerariosEncontrados {
 				fmt.Printf("\nOPÇÃO [%d] - Preço Total: R$ %.2f\n", i+1, itin.PrecoTotal)
 				for j, t := range itin.Trechos {
-					fmt.Printf("  Trecho %d: %s -> %s | Partida: %s | Chegada: %s (Carona ID: %s | Motorista: %s)\n",
-						j+1, t.Origem, t.Destino, t.HorarioPartida.Format("15:04"), t.HorarioChegada.Format("15:04"), t.CaronaID, t.MotoristaID)
+					emp := t.EmpresaID
+					if emp == "" {
+						emp = "local"
+					}
+					fmt.Printf("  Trecho %d [%s]: %s -> %s | Partida: %s | Chegada: %s (Carona ID: %s | Motorista: %s)\n",
+						j+1, emp, t.Origem, t.Destino, t.HorarioPartida.Format("15:04"), t.HorarioChegada.Format("15:04"), t.CaronaID, t.MotoristaID)
 				}
 			}
 
@@ -221,13 +266,13 @@ func main() {
 
 		case "2":
 			reservas := buscarReservas(conexao, email, buf)
-			fmt.Println("\n--- MINHAS RESERVAS ---")
+			fmt.Println("\n--- MINHAS RESERVAS (CONSULTA EM TEMPO REAL AO CONSÓRCIO) ---")
 			if len(reservas) == 0 {
 				fmt.Println("Você não possui reservas ativas.")
 				continue
 			}
 			for i, r := range reservas {
-				fmt.Printf("[%d] ID Reserva: %s | Valor Total: R$ %.2f | Trechos: %d\n", i+1, r.ID, r.ValorTotal, len(r.Itinerario))
+				exibirDetalhesReserva(i+1, r)
 			}
 
 		case "3":
@@ -241,29 +286,9 @@ func main() {
 				continue
 			}
 
-			// Lista todas as reservas com detalhes completos e ID da reserva preservado
+			// Lista todas as reservas com detalhes completos (ou status offline do servidor parceiro)
 			for i, r := range reservas {
-				origemGeral := "Indefinida"
-				destinoGeral := "Indefinido"
-				dataHoraStr := "Indefinida"
-
-				if len(r.Itinerario) > 0 {
-					origemGeral = r.Itinerario[0].Origem
-					destinoGeral = r.Itinerario[len(r.Itinerario)-1].Destino
-					dataHoraStr = fmt.Sprintf("%s às %s",
-						r.Itinerario[0].HorarioPartida.Format("02/01/2006"),
-						r.Itinerario[0].HorarioPartida.Format("15:04"))
-				}
-
-				fmt.Printf("\n[%d] ID Reserva: %s | Rota: %s -> %s\n", i+1, r.ID, origemGeral, destinoGeral)
-				fmt.Printf("    Partida: %s | Valor Total: R$ %.2f | Trechos: %d\n", dataHoraStr, r.ValorTotal, len(r.Itinerario))
-
-				// Detalha os trechos individuais com ID da carona preservado
-				for j, t := range r.Itinerario {
-					fmt.Printf("      Trecho %d: %s -> %s (Carona ID: %s | Motorista: %s | Partida: %s | Chegada: %s)\n",
-						j+1, t.Origem, t.Destino, t.CaronaID, t.MotoristaID,
-						t.HorarioPartida.Format("15:04"), t.HorarioChegada.Format("15:04"))
-				}
+				exibirDetalhesReserva(i+1, r)
 			}
 
 			fmt.Println("\n[0] Voltar ao menu")

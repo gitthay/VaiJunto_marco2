@@ -32,13 +32,15 @@ type Carona struct {
 	Ativa       bool     `json:"ativa"`        // Status se a carona está visível
 }
 
-// estrutura de reserva
+// Reserva armazena em cada servidor participante os dados completos APENAS dos seus próprios trechos
+// e somente a referência (carona_id, empresa_id, servidor_url, origem, destino) dos trechos de outros servidores.
 type Reserva struct {
-	ID           string         `json:"id"`
-	PassageiroID string         `json:"passageiro_id"`
-	Itinerario   []ArestaTrecho `json:"itinerario"`
-	ValorTotal   float64        `json:"valor_total"`
-	DataCriacao  time.Time      `json:"data_criacao"`
+	ID             string         `json:"id"`
+	PassageiroID   string         `json:"passageiro_id"`
+	CoordenadorURL string         `json:"coordenador_url,omitempty"`
+	Itinerario     []ArestaTrecho `json:"itinerario"`
+	ValorTotal     float64        `json:"valor_total,omitempty"`
+	DataCriacao    time.Time      `json:"data_criacao"`
 }
 
 // EstadoTransacao representa o estágio do Two-Phase Commit (2PC) em memória
@@ -103,12 +105,12 @@ type Usuario struct {
 type MensagemRequisicao struct {
 	Acao    TipoAcao        `json:"acao"`
 	Usuario string          `json:"usuario"`
-	Payload json.RawMessage `json:"payload"` //se eu fixar uma struct especifica, teria que crair uma struct para cada tipo de payload, então uso RawMessage
+	Payload json.RawMessage `json:"payload"`
 }
 
 // envelope padrão retornado pelo Servidor.
 type MensagemResposta struct {
 	Sucesso  bool            `json:"sucesso"`
-	Mensagem string          `json:"mensagem,omitempty"` //se o campo estiver vazio, não será incluído no JSON
+	Mensagem string          `json:"mensagem,omitempty"`
 	Payload  json.RawMessage `json:"payload,omitempty"`
 }

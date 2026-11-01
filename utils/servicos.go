@@ -22,16 +22,42 @@ func NovaData(dia, mes, ano int) Data {
 
 // representa um trecho de carona disponível na rede
 type ArestaTrecho struct {
-	CaronaID       string    `json:"carona_id"`
-	MotoristaID    string    `json:"motorista_id"`
-	EmpresaID      string    `json:"empresa_id,omitempty"`
-	ServidorURL    string    `json:"servidor_url,omitempty"`
-	Origem         string    `json:"origem"`
-	Destino        string    `json:"destino"`
-	HorarioPartida time.Time `json:"horario_partida"`
-	HorarioChegada time.Time `json:"horario_chegada"`
-	Preco          float64   `json:"preco"`
-	AssentosLivre  int       `json:"assentos_livres"`
+	CaronaID        string    `json:"carona_id"`
+	MotoristaID     string    `json:"motorista_id,omitempty"`
+	EmpresaID       string    `json:"empresa_id,omitempty"`
+	ServidorURL     string    `json:"servidor_url,omitempty"`
+	Origem          string    `json:"origem,omitempty"`
+	Destino         string    `json:"destino,omitempty"`
+	HorarioPartida  time.Time `json:"horario_partida,omitempty"`
+	HorarioChegada  time.Time `json:"horario_chegada,omitempty"`
+	Preco           float64   `json:"preco,omitempty"`
+	AssentosLivre   int       `json:"assentos_livres,omitempty"`
+	ServidorOffline bool      `json:"servidor_offline,omitempty"`
+}
+
+// MarshalJSON garante que trechos de outros servidores salvos localmente no reservas.json
+// contenham apenas as referências (carona_id, empresa_id, servidor_url),
+// sem guardar origem, destino, motorista, preço ou horários de outro servidor.
+func (a ArestaTrecho) MarshalJSON() ([]byte, error) {
+	if a.MotoristaID == "" && a.HorarioPartida.IsZero() && a.HorarioChegada.IsZero() && a.Preco == 0 {
+		return json.Marshal(struct {
+			CaronaID        string `json:"carona_id"`
+			EmpresaID       string `json:"empresa_id,omitempty"`
+			ServidorURL     string `json:"servidor_url,omitempty"`
+			Origem          string `json:"origem,omitempty"`
+			Destino         string `json:"destino,omitempty"`
+			ServidorOffline bool   `json:"servidor_offline,omitempty"`
+		}{
+			CaronaID:        a.CaronaID,
+			EmpresaID:       a.EmpresaID,
+			ServidorURL:     a.ServidorURL,
+			Origem:          a.Origem,
+			Destino:         a.Destino,
+			ServidorOffline: a.ServidorOffline,
+		})
+	}
+	type Alias ArestaTrecho
+	return json.Marshal((Alias)(a))
 }
 
 // Representa um itinerário completo sugerido ao passageiro (uma lista sequencial de trechos)
@@ -269,8 +295,7 @@ func SalvarCarona(novaCarona Carona) error {
 		return err
 	}
 
-	// salvaa
-	//  os dados no arquivo
+	// salva os dados no arquivo
 	return os.WriteFile(ArquivoCaronas, dadosFormatados, 0644)
 }
 
@@ -286,6 +311,112 @@ func CarregarReservas() ([]Reserva, error) {
 	var reservas []Reserva
 	err = json.Unmarshal(dados, &reservas)
 	return reservas, err
+}
+
+// FiltrarReservaParaArmazenamentoLocal descentraliza os dados da reserva:
+// - Para trechos pertencentes a ESTE servidor (ServidorAtualURL), preenche/mantém os detalhes completos locais.
+// - Para trechos pertencentes a OUTROS servidores participantes, armazena APENAS as informações de referência
+//   (CaronaID, EmpresaID, ServidorURL, Origem, Destino), obrigando a consulta via rede quando detalhes forem solicitados.
+func FiltrarReservaParaArmazenamentoLocal(r Reserva) Reserva {
+	copia := r
+	copia.Itinerario = make([]ArestaTrecho, len(r.Itinerario))
+	caronasLocais, _ := CarregarCaronas()
+
+	for i, tr := range r.Itinerario {
+		urlSrv := strings.TrimRight(strings.TrimSpace(tr.ServidorURL), "/")
+		if urlSrv == "" {
+			urlSrv = ServidorAtualURL
+		}
+
+		if urlSrv == ServidorAtualURL {
+			trechoLocal := tr
+			trechoLocal.ServidorURL = ServidorAtualURL
+			if trechoLocal.EmpresaID == "" {
+				trechoLocal.EmpresaID = EmpresaAtualID
+			}
+			// Se veio apenas com referência, hidrata com os dados da carona local
+			if trechoLocal.MotoristaID == "" || trechoLocal.HorarioPartida.IsZero() {
+				if det, ok := obterDetalheTrechoEmListaCaronas(caronasLocais, trechoLocal.CaronaID, trechoLocal.Origem, trechoLocal.Destino); ok {
+					trechoLocal.MotoristaID = det.MotoristaID
+					trechoLocal.HorarioPartida = det.HorarioPartida
+					trechoLocal.HorarioChegada = det.HorarioChegada
+					trechoLocal.Preco = det.Preco
+				}
+			}
+			trechoLocal.AssentosLivre = 0 // Não persiste snapshot estático de assentos livres na reserva
+			trechoLocal.ServidorOffline = false
+			copia.Itinerario[i] = trechoLocal
+		} else {
+			// Trecho de outro servidor: guarda somente quem é o servidor participante e o ID da corrida
+			copia.Itinerario[i] = ArestaTrecho{
+				CaronaID:    tr.CaronaID,
+				EmpresaID:   tr.EmpresaID,
+				ServidorURL: urlSrv,
+			}
+		}
+	}
+	return copia
+}
+
+// obterDetalheTrechoEmListaCaronas extrai os dados consolidados de um trecho (origem -> destino) de uma carona local
+func obterDetalheTrechoEmListaCaronas(caronas []Carona, caronaID, origem, destino string) (ArestaTrecho, bool) {
+	caronaIDClean := strings.TrimSpace(caronaID)
+	for _, c := range caronas {
+		if strings.TrimSpace(c.ID) == caronaIDClean && c.Ativa {
+			indices := localizarIndicesTrecho(c, origem, destino)
+			if len(indices) == 0 {
+				continue
+			}
+			primeiro := c.Trechos[indices[0]]
+			ultimo := c.Trechos[indices[len(indices)-1]]
+			var precoTotal float64
+			menorAssento := primeiro.AssentosLivre
+			for _, idx := range indices {
+				precoTotal += c.Trechos[idx].Preco
+				if c.Trechos[idx].AssentosLivre < menorAssento {
+					menorAssento = c.Trechos[idx].AssentosLivre
+				}
+			}
+			return ArestaTrecho{
+				CaronaID:       c.ID,
+				MotoristaID:    c.MotoristaID,
+				EmpresaID:      EmpresaAtualID,
+				ServidorURL:    ServidorAtualURL,
+				Origem:         origem,
+				Destino:        destino,
+				HorarioPartida: primeiro.HorarioPartida,
+				HorarioChegada: ultimo.HorarioChegada,
+				Preco:          precoTotal,
+				AssentosLivre:  menorAssento,
+			}, true
+		}
+	}
+	return ArestaTrecho{}, false
+}
+
+// SalvarOuAtualizarReservaLocalSemLock grava ou atualiza a reserva descentralizada no reservas.json local
+// (assume que mu.Lock() já está adquirido pelo chamador)
+func SalvarOuAtualizarReservaLocalSemLock(r Reserva) error {
+	reservaFiltrada := FiltrarReservaParaArmazenamentoLocal(r)
+	reservas, _ := CarregarReservas()
+
+	atualizou := false
+	for i := range reservas {
+		if strings.TrimSpace(reservas[i].ID) == strings.TrimSpace(reservaFiltrada.ID) {
+			reservas[i] = reservaFiltrada
+			atualizou = true
+			break
+		}
+	}
+	if !atualizou {
+		reservas = append(reservas, reservaFiltrada)
+	}
+
+	dadosReservas, err := json.MarshalIndent(reservas, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(ArquivoReservas, dadosReservas, 0644)
 }
 
 // localiza, dentro dos trechos ORIGINAIS de uma carona, a sequência contínua de índices
@@ -323,12 +454,15 @@ func ReservarItinerario(passageiroID string, itinerario Itinerario) (*Reserva, e
 	return CoordenarReserva2PC(passageiroID, itinerario)
 }
 
-// retorna todas as reservas ativas de um determinado passageiro
+// retorna todas as reservas ativas de um determinado passageiro, buscando sob demanda via REST
+// os detalhes dos trechos que pertencem a outros servidores participantes do consórcio
 func ListarReservasPassageiro(passageiroID string) ([]Reserva, error) {
-	mu.Lock()
-	defer mu.Unlock()
+	// Antes de listar, reconcilia eventuais cancelamentos ocorridos enquanto servidores estavam offline
+	sincronizarReservasComPeers()
 
+	mu.Lock()
 	reservas, err := CarregarReservas()
+	mu.Unlock()
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +470,9 @@ func ListarReservasPassageiro(passageiroID string) ([]Reserva, error) {
 	var minhasReservas []Reserva
 	for _, r := range reservas {
 		if r.PassageiroID == passageiroID {
-			minhasReservas = append(minhasReservas, r)
+			copia := r
+			PreencherDetalhesRemotosReserva(&copia)
+			minhasReservas = append(minhasReservas, copia)
 		}
 	}
 	return minhasReservas, nil
@@ -378,6 +514,10 @@ func CancelarReserva(reservaID, passageiroID string) error {
 	}
 
 	trechosRemotosPorServidor := make(map[string][]ArestaTrecho)
+	urlCoordenador := strings.TrimRight(strings.TrimSpace(reservaEncontrada.CoordenadorURL), "/")
+	if urlCoordenador != "" && urlCoordenador != ServidorAtualURL {
+		trechosRemotosPorServidor[urlCoordenador] = []ArestaTrecho{}
+	}
 
 	//Devolve os assentos ocupados no caronas.json local e separa trechos de outros servidores
 	caronas, err := CarregarCaronas()
@@ -419,7 +559,7 @@ func CancelarReserva(reservaID, passageiroID string) error {
 	err = os.WriteFile(ArquivoReservas, dadosReservas, 0644)
 	mu.Unlock()
 
-	// Notifica via requisição REST os demais servidores do consórcio para liberarem seus assentos
+	// Notifica via requisição REST os demais servidores do consórcio para liberarem seus assentos e removerem a reserva
 	for urlSrv, trechos := range trechosRemotosPorServidor {
 		EnviarLiberacaoRemota(urlSrv, reservaIDClean, trechos)
 	}
@@ -429,6 +569,8 @@ func CancelarReserva(reservaID, passageiroID string) error {
 
 // traz todas as caronas cadastradas pelo motorista logado
 func ConsultarCaronasMotorista(motoristaID string) ([]Carona, error) {
+	sincronizarReservasComPeers()
+
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -448,6 +590,8 @@ func ConsultarCaronasMotorista(motoristaID string) ([]Carona, error) {
 
 // cancela a carona e verifica se há passageiros afetados (locais e de outras empresas via requisição REST)
 func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageiros bool) (bool, string, error) {
+	sincronizarReservasComPeers()
+
 	// Primeiro consulta via REST quais passageiros de empresas parceiras possuem reserva nesta carona
 	passageirosRemotos := ConsultarPassageirosRemotosDaCarona(caronaID)
 
@@ -571,6 +715,7 @@ func CancelarCaronaMotorista(caronaID, motoristaID string, confirmouComPassageir
 
 // retorna quais passageiros compraram assentos na carona (locais + consulta REST às empresas parceiras)
 func ConsultarPassageirosCarona(caronaID, motoristaID string) ([]string, error) {
+	sincronizarReservasComPeers()
 	passageirosRemotos := ConsultarPassageirosRemotosDaCarona(caronaID)
 
 	mu.Lock()
@@ -626,7 +771,7 @@ func AutenticarOuCadastrarUsuario(email, senha string, tipo TipoUsuario) (bool, 
 		}
 	}
 
-	//e não encontrou, realiza o cadastro automático no primeiro acesso
+	// se não encontrou, realiza o cadastro automático no primeiro acesso
 	novoUsuario := Usuario{
 		Email: email,
 		Senha: senha,
