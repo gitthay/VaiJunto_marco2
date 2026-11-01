@@ -34,6 +34,8 @@ O projeto implementa múltiplos servidores independentes em Go (representando em
 - **Consulta de Detalhes Sob Demanda (Online / Offline)**: Quando o passageiro lista ou vai cancelar suas reservas, o servidor envia apenas `reserva_id` + `carona_id` para o servidor dono do trecho (`GET /api/caronas/detalhe`). Se ele estiver **ONLINE**, os detalhes completos são exibidos; se estiver **OFFLINE**, o cliente mostra `[SERVIDOR OFFLINE - Detalhes indisponíveis no momento]`.
 - **Reconciliação Pós-Queda (restauração de `+1` assento)**: Se um servidor estava desligado enquanto uma reserva da qual ele participava foi cancelada (ou teve a carona cancelada) em outro servidor, ao voltar ele consulta `GET /api/reservas/status` nos demais participantes (no boot, a cada ciclo do Heartbeat e antes das consultas), remove a reserva do seu `reservas.json` e devolve `+1` assento no seu `caronas.json` — de forma idempotente (nunca soma duas vezes).
 - **Detecção de Queda do Servidor no Cliente + Reconexão Automática**: Se o servidor ao qual o cliente está conectado cair, o cliente **não exibe mais listas vazias**. Ele detecta o fim da conexão TCP (`EOF`/reset) e avisa `[SERVIDOR OFFLINE]`. Quando o servidor volta, na próxima ação do menu o cliente **reconecta, refaz o login automaticamente** e executa a operação pedida (`[RECONECTADO]`), sem precisar reiniciar o terminal.
+- **Streaming Contínuo de JSON sobre TCP (Anti-Fragmentação)**:
+  - O protocolo de sockets TCP opera com decodificadores contínuos (`json.NewDecoder` e `json.NewEncoder`), eliminando o problema de fragmentação de pacotes em mensagens de busca/reserva de itinerários multi-trechos (MTU de rede entre máquinas físicas diferentes) que anteriormente causava erros de `unexpected end of JSON input`.
 - **Fila de Requisições com Pool de Workers (`main.go`)**: As requisições TCP dos clientes entram em uma fila concorrente (`chan TarefaRequisicao`) consumida por um pool fixo de *workers*, evitando saturação de I/O sob rajadas de centenas de clientes simultâneos.
 - **Batimento Cardíaco (Heartbeat)**: Monitoramento contínuo entre os servidores (`GET /api/heartbeat`). Se uma empresa cair, as demais detectam via timeout e continuam operando para as rotas que não dependem dela.
 - **Busca Federada de Itinerários (BFS em Grafo)**: O servidor do passageiro consulta via REST (`GET /api/caronas`) os trechos das empresas parceiras online e monta o grafo unificado para encontrar roteiros combinando múltiplas empresas.
@@ -221,10 +223,9 @@ Parâmetros opcionais:
 - `-servers`: endereços TCP dos servidores (padrão: `localhost:8081,localhost:8082,localhost:8083`)
 - `-clientes`: número de passageiros simultâneos (padrão: `300`)
 - `-assentos`: vagas ofertadas por trecho na semeadura (padrão: `10`)
-- `-fila`: tamanho máximo da fila de conexões simultâneas (padrão: `45`)
+- `-fila`: tamanho máximo da fila de conexões simultâneas (padrão: `45`). Em redes Wi-Fi ou testes inter-máquinas com limites de backlog no socket, use `-fila 2` ou `-fila 5` para controle suave de concorrência.
 - `-seed`: `true`/`false` para publicar automaticamente as caronas antes do disparo (padrão: `true`)
 
----
 
 ### Executando os Testes Automatizados
 
